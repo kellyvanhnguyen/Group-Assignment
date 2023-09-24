@@ -1,7 +1,7 @@
 ---
 title: "ETC5242 Assignment 1"
 subtitle: "Group 42"
-author: "Khuyen Nguyen: kngu0086@student.monash.edu, Evan Ginting: , Rachitha Werake: "
+author: "Khuyen Nguyen: kngu0086@student.monash.edu, Evan Ginting: , Rachitha Werake: rwer0002@student.monash.edu "
 output: pdf_document
 ---
 
@@ -21,6 +21,7 @@ knitr::opts_chunk$set(
 
 ```{r loading-data}
 library(tidyverse)
+library(broom)
 grades <- read_csv("data/GradesData.csv")
 ```
 
@@ -34,6 +35,19 @@ grades <- grades %>%
 
 ### Traditionally Normal distributions have been used to model grade distributions. Plot your data and explain whether you think that this is good idea in this instance. [3 marks]
 
+```{r}
+library(MASS)
+x <- c(grades$Total)
+normal_fit <- fitdistr(x, "normal")
+normal_fit %>% tidy()
+
+
+normpdf <- grades %>% ggplot(aes(x=x, y=after_stat(density))) +
+  geom_histogram(colour="blue", fill="blue", alpha=0.2, bins=30) +
+  geom_density(colour="green", fill="green", alpha=0.2)
+
+normpdf
+```
 
 
 ## Task 2 - Are Postgrad students better? [30 marks]
