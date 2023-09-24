@@ -20,6 +20,8 @@ knitr::opts_chunk$set(
 ```
 
 ```{r loading-data}
+library(broom)
+library(gridExtra)
 library(MASS)
 library(tidyverse)
 grades <- read_csv("data/GradesData.csv")
@@ -28,14 +30,14 @@ grades <- read_csv("data/GradesData.csv")
 # Task 1 - fit a distribution [30 marks]
 ### The lecturer wants to examine “genuine” (non-zero) attempts only. Check and modify the data (if necessary) to ensure that only genuine attempts are analysed. [1 mark]
 
-```{r}
+```{r non-zero}
 grades <- grades %>%
   filter(Total != 0)
 ```
 
 ### Traditionally Normal distributions have been used to model grade distributions. Plot your data and explain whether you think that this is good idea in this instance. [3 marks]
 
-```{r}
+```{r density}
 dist <- grades %>%
   ggplot(aes(x = Total, y = after_stat(density))) +
   geom_histogram(colour = "blue",
@@ -44,7 +46,7 @@ dist <- grades %>%
   geom_density(colour = "blue",
                fill = "blue",
                alpha = 0.2) +
-  ggtitle("Distribution of Total Grades") +
+  ggtitle("Distribution of Total Scores") +
   xlab("Total Score") +
   ylab("Density") +
   theme_bw()
@@ -52,27 +54,140 @@ dist <- grades %>%
 dist
 ```
 
-A normal distribution may be a good idea in this instance, as the visualisation does resemble a bell-shape. It is generally symmetric and unimodal.
+A normal distribution may be a good idea in this instance since the visualisation does resemble a bell shape. It is generally symmetric and unimodal. The distribution is slightly skewed, but overall, it can be a good fit.
 
 ### An alternative is the beta distribution. Explain why this may be a valid alternative in this case. [2 marks]
 
-The beta distribution could work given we give the correct parameter estimates of $\alpha$ and $\beta$. We can see the distribution does tend slightly to the right and perhaps the beta distribution can assist here but we would need to fit the data using Maximum Likelihood.
+The beta distribution is also a viable option. To use it, we'll need to determine the parameter estimates $\alpha$ and $\beta$. Observing that the distribution shows a slight leftward tendency, the beta distribution may be well-suited for this situation. Additionally, since the test scores range from 0 to 1, the beta distribution's domain aligns with the data range.
 
 ### Use Maximum Likelihood to fit both a Normal and Beta distribution to the grades. Use a Bootstrap QQplot to assess the fit of each. Which distribution do you recommend? Be sure to briefly explain your reasoning. [8 marks]
 
+**1. Normal distribution**
+
 ```{r normal-distribution}
 fit_norm <- fitdistr(grades$Total, "normal")
-params_norm <- fit_norm$estimate 
+fit_norm %>% tidy()
 ```
+
+```{r norm-qqplot}
+x <- grades$Total
+n <- nrow(grades)
+scores <- tibble(id = 1:n, x = x)
+params_norm <- fit_norm$estimate
+
+qq_norm <- ggplot(scores, aes(sample = x)) +
+  stat_qq(distribution = qnorm, dparams = params_norm) +
+  stat_qq_line(distribution = qnorm,
+               dparams = params_norm,
+               color = "black") +
+  theme(aspect.ratio = 1) + theme_bw() +
+  ggtitle("QQ plot of Total Scores according to a Normal Distribution") +
+  xlab("Theoretical Distribution") + ylab("Total Scores")
+
+qq_norm
+```
+
+```{r norm-bootstrap}
+set.seed(474)
+
+B <- 500
+
+MLE.x_boot <- matrix(rep(NA, 2 * B), nrow = B, ncol = 2)
+for (i in 1:B) {
+  temp <- sample(grades$Total, size = n, replace = TRUE)
+  scores <- scores %>% mutate(temp = temp)
+  MLE.x_boot[i, ] <- fitdistr(temp, "normal")$estimate
+  params_boot <- MLE.x_boot[i, ]
+  qq_norm <-
+    qq_norm + stat_qq(
+      aes(sample = temp),
+      distribution = qnorm,
+      dparams = params_boot,
+      colour = "grey",
+      alpha = 0.2
+    )
+}
+qq_norm <- qq_norm + stat_qq(aes(sample = x), distribution = qnorm,
+                             dparams = params_norm) +
+  ggtitle("QQ plot of Total Scores with B=500 Bootstrap replicates") 
+
+qq_norm
+```
+
+**2. Beta distribution**
 
 ```{r beta-distribution}
 fit_beta <- fitdistr(grades$Total, "beta", start = list(shape1 = 1, shape2 = 1))
-params_beta <- fit_beta$estimate 
+fit_beta %>% tidy()
 ```
+
+```{r beta-qqplot}
+scores2 <- tibble(id = 1:n, x = x)
+params_beta <- fit_beta$estimate
+
+qq_beta <- ggplot(scores2, aes(sample = x)) +
+  stat_qq(distribution = qbeta, dparams = params_beta) +
+  stat_qq_line(distribution = qbeta,
+               dparams = params_beta,
+               color = "black") +
+  theme(aspect.ratio = 1) + theme_bw() +
+  ggtitle("QQ plot of Total Scores according to a Beta Distribution") +
+  xlab("Theoretical Distribution") + ylab("Total Scores")
+
+qq_beta 
+```
+
+```{r beta-bootstrap}
+set.seed(474)
+
+B <- 500
+
+MLE.x_boot <- matrix(rep(NA, 2 * B), nrow = B, ncol = 2)
+for (i in 1:B) {
+  temp <- sample(grades$Total, size = n, replace = TRUE)
+  scores2 <- scores2 %>% mutate(temp = temp)
+  MLE.x_boot[i, ] <- fitdistr(temp, "beta", start = list(shape1 = 1, shape2 = 1))$estimate
+  params_boot <- MLE.x_boot[i, ]
+  qq_beta <-
+    qq_beta + stat_qq(
+      aes(sample = temp),
+      distribution = qbeta,
+      dparams = params_boot,
+      colour = "grey",
+      alpha = 0.2
+    )
+}
+qq_beta <- qq_beta + stat_qq(aes(sample = x), distribution = qbeta,
+                             dparams = params_beta) +
+  ggtitle("QQ plot of Total Scores with B=500 Bootstrap replicates")
+
+qq_beta
+```
+
+**3. Recommendation**
+ 
+Based on the Bootstrap QQ plots, I would recommend using the Beta distribution. You can observe that the grey confidence intervals on the Beta distribution have fewer points deviating from the line compared to the Normal distribution. In the Normal distribution, points deviate at both the beginning and end of the line, whereas for the Beta distribution, the fit is only slightly off at the beginning.
+
+\newpage
 
 ### The lecturer is interested in trying the Beta distribution. Use your MLE’s to report the mean and the median of the grade distribution (recall that the mean is a function of the shape and rate parameters). Be sure to interpret these values. [4 marks]
 
+```{r}
+median <- qbeta(0.5, shape1=5.95, shape2=2.63)
+```
+
+The mean of the Beta distribution is given by the formula: $E[X] = \frac{\alpha}{\alpha+\beta}$. 
+
+Given our shape and rate parameters were 5.95 and 2.63 respectively, our mean is: $E[X] = \frac{5.95}{5.95+2.63} = 0.693$.
+
+The median of the Beta distribution is `r round(median, 3)`, confirming the slight left skew we mentioned earlier.
+
 ### Plot and interpret a 99% parametric bootstrap of the mean of the beta distribution (HINT: set warning=FALSE in your code chunk). Did the average quiz mark match the lecturer’s goal? [4 marks]
+
+```{r}
+boot.LCI <- quantile(MLE.x_boot[1, ], c(0.005, 0.995))
+boot.LCI
+```
 
 ### Using the MLE’s, what is the estimated proportion of students within 15% of the average? According to the lecturer’s benchmark, what proportion would have failed? How many would get HD’s? [4 marks]
 
