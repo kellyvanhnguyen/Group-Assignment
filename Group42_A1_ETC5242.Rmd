@@ -1,0 +1,41 @@
+---
+title: "ETC5242 Assignment 1"
+subtitle: "Group 42"
+author: "Khuyen Nguyen: kngu0086@student.monash.edu, Evan Ginting: , Rachitha Werake: "
+output: pdf_document
+---
+
+**REMEMBER TO ADD STUDENT E-MAIL ABOVE^ (remove this line once done)**
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  eval = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  error = FALSE,
+  tidy.opts = list(width.cutoff = 60),
+  tidy = TRUE
+)
+```
+
+```{r loading-data}
+library(tidyverse)
+grades <- read_csv("data/GradesData.csv")
+```
+
+# Task 1 - fit a distribution [30 marks]
+### The lecturer wants to examine “genuine” (non-zero) attempts only. Check and modify the data (if necessary) to ensure that only genuine attempts are analysed. [1 mark]
+
+```{r}
+grades <- grades %>%
+  filter(Total != 0)
+```
+
+### Traditionally Normal distributions have been used to model grade distributions. Plot your data and explain whether you think that this is good idea in this instance. [3 marks]
+
+
+
+## Task 2 - Are Postgrad students better? [30 marks]
+
+## Task 3 - Bayesian Analysis [33 marks]
