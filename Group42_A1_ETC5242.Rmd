@@ -22,6 +22,7 @@ knitr::opts_chunk$set(
 ```{r loading-data}
 library(broom)
 library(gridExtra)
+library(kableExtra)
 library(MASS)
 library(tidyverse)
 grades <- read_csv("data/GradesData.csv")
@@ -83,8 +84,6 @@ qq_norm <- ggplot(scores, aes(sample = x)) +
   theme(aspect.ratio = 1) + theme_bw() +
   ggtitle("QQ plot of Total Scores according to a Normal Distribution") +
   xlab("Theoretical Distribution") + ylab("Total Scores")
-
-qq_norm
 ```
 
 ```{r norm-bootstrap}
@@ -133,8 +132,6 @@ qq_beta <- ggplot(scores2, aes(sample = x)) +
   theme(aspect.ratio = 1) + theme_bw() +
   ggtitle("QQ plot of Total Scores according to a Beta Distribution") +
   xlab("Theoretical Distribution") + ylab("Total Scores")
-
-qq_beta 
 ```
 
 ```{r beta-bootstrap}
@@ -168,8 +165,6 @@ qq_beta
  
 Based on the Bootstrap QQ plots, I would recommend using the Beta distribution. You can observe that the grey confidence intervals on the Beta distribution have fewer points deviating from the line compared to the Normal distribution. In the Normal distribution, points deviate at both the beginning and end of the line, whereas for the Beta distribution, the fit is only slightly off at the beginning.
 
-\newpage
-
 ### The lecturer is interested in trying the Beta distribution. Use your MLE’s to report the mean and the median of the grade distribution (recall that the mean is a function of the shape and rate parameters). Be sure to interpret these values. [4 marks]
 
 ```{r}
@@ -185,9 +180,48 @@ The median of the Beta distribution is `r round(median, 3)`, confirming the slig
 ### Plot and interpret a 99% parametric bootstrap of the mean of the beta distribution (HINT: set warning=FALSE in your code chunk). Did the average quiz mark match the lecturer’s goal? [4 marks]
 
 ```{r}
-boot.LCI <- quantile(MLE.x_boot[1, ], c(0.005, 0.995))
-boot.LCI
+########### the bootplot.f function ############ 
+bootplot.f<- function(stat.boot, bins=50, a=.05){
+
+df <- tibble(stat = stat.boot)
+CI <- round(quantile(stat.boot, c(a/2, 1-a/2)),2)
+p <- df %>% ggplot(aes(x=stat, y=after_stat(density))) + 
+geom_histogram(bins=bins, colour="magenta", fill="magenta", alpha=0.2) + 
+geom_density(fill="magenta", colour="magenta", alpha=0.2) +
+geom_vline(xintercept = CI, colour = "magenta", linetype=5) +
+theme_bw() 
+
+p 
+} 
+######## end of bootplot.f function #######
 ```
+
+```{r}
+boot.LCI.alpha <- quantile(MLE.x_boot[, 1], c(0.005, 0.995))
+boot.LCI.alpha
+```
+
+
+```{r}
+boot.LCI.beta <- quantile(MLE.x_boot[, 2], c(0.005, 0.995))
+boot.LCI.beta
+```
+
+```{r}
+p_MLEboot.alpha <- bootplot.f(MLE.x_boot[, 1], bins = 100) +
+ggtitle("Sampling distribution for MLE of alpha") +
+xlab("MLE of alpha") +
+theme(title = element_text(size = 8))
+p_MLEboot.beta <- bootplot.f(MLE.x_boot[, 2], bins = 100) +
+ggtitle("Sampling distribution for MLE of beta") +
+xlab("MLE of beta") +
+theme(title = element_text(size = 8))
+grid.arrange(p_MLEboot.alpha, p_MLEboot.beta, ncol = 2)
+```
+
+The parametric bootstrap confidence interval (CI) for alpha is [4.797, 7.740], and for beta is [2.108, 3.438].
+
+The lecturer advised that the average mark would be approximately 70%, with most students falling within about 10% of that grade. Since alpha lies between 4.797 and 7.740, it does not fully encompass the entire 10% gap that the lecturer suggested; instead, it is more toward the lower end. However, it does cover the average mark of 70%.
 
 ### Using the MLE’s, what is the estimated proportion of students within 15% of the average? According to the lecturer’s benchmark, what proportion would have failed? How many would get HD’s? [4 marks]
 
@@ -195,5 +229,44 @@ boot.LCI
 
 
 ## Task 2 - Are Postgrad students better? [30 marks]
+
+### Create a new variable “Result” which contains the values “Pass” or “Fail” depending on the value of the variable Total, and add it to your dataframe. (Hint: If you have the MASS package loaded, the dplyr command select will not work. Add dplyr::before any select command in your code.) [4 marks]
+
+```{r}
+grades <- grades %>%
+  mutate(Result = dplyr::case_when(
+    Total < 0.6 ~ "Fail",
+    Total >= 0.6 ~ "Pass"
+  ))
+```
+
+### Report a table with the relevant proportions and discuss the result. [10 marks]
+
+```{r}
+grades1 <- grades %>%
+  group_by(Result, Cohort) %>%
+  tally() %>%
+  ungroup()
+
+grades2 <- grades1 %>% 
+  pivot_wider(names_from = Result, values_from = n) 
+
+grades3 <- grades2 %>% 
+  mutate(Total = Fail + Pass) %>% 
+  mutate(Prop = round(Pass/Total, digits=3)) %>%
+  select(Cohort, Pass, Fail, Total, Prop) 
+
+grades4 <- grades3 %>% 
+  arrange(desc(row_number())) 
+
+grades4 %>% 
+  kable() %>% 
+  kable_styling()
+```
+There are more students enrolled in the undergraduate cohort, with a higher number of students passing and failing than in the postgraduate cohort. However, there is a higher proportion of students who passed in the postgraduate cohort compared to the undergraduate cohort, with 82% passing compared to 68%.
+
+### Conduct a permutation test with 5000 replications. Plot the sampling distribution of your test. [4 marks]
+
+
 
 ## Task 3 - Bayesian Analysis [33 marks]
