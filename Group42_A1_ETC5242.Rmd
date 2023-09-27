@@ -5,8 +5,6 @@ author: "Khuyen Nguyen: kngu0086@student.monash.edu, Evan Ginting: , Rachitha We
 output: pdf_document
 ---
 
-**REMEMBER TO ADD STUDENT E-MAIL ABOVE^ (remove this line once done)**
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   echo = TRUE,
@@ -65,7 +63,7 @@ The beta distribution is also a viable option. To use it, we'll need to determin
 
 **1. Normal distribution**
 
-```{r normal-distribution}
+```{r normal-distribution, warning=FALSE}
 fit_norm <- fitdistr(grades$Total, "normal")
 fit_norm %>% tidy()
 ```
@@ -86,7 +84,7 @@ qq_norm <- ggplot(scores, aes(sample = x)) +
   xlab("Theoretical Distribution") + ylab("Total Scores")
 ```
 
-```{r norm-bootstrap}
+```{r norm-bootstrap, warning=FALSE}
 set.seed(474)
 
 B <- 500
@@ -115,7 +113,7 @@ qq_norm
 
 **2. Beta distribution**
 
-```{r beta-distribution}
+```{r beta-distribution, warning=FALSE}
 fit_beta <- fitdistr(grades$Total, "beta", start = list(shape1 = 1, shape2 = 1))
 fit_beta %>% tidy()
 ```
@@ -134,7 +132,7 @@ qq_beta <- ggplot(scores2, aes(sample = x)) +
   xlab("Theoretical Distribution") + ylab("Total Scores")
 ```
 
-```{r beta-bootstrap}
+```{r beta-bootstrap, warning=FALSE}
 set.seed(474)
 
 B <- 500
@@ -171,7 +169,7 @@ Based on the Bootstrap QQ plots, I would recommend using the Beta distribution. 
 median <- qbeta(0.5, shape1=5.95, shape2=2.63)
 ```
 
-The mean of the Beta distribution is given by the formula: $E[X] = \frac{\alpha}{\alpha+\beta}$. 
+The mean of the Beta distribution is given by the formula: $\text{E}(X) = \frac{\alpha}{\alpha+\beta}$. 
 
 Given our shape and rate parameters were 5.95 and 2.63 respectively, our mean is: $E[X] = \frac{5.95}{5.95+2.63} = 0.693$.
 
@@ -219,14 +217,56 @@ theme(title = element_text(size = 8))
 grid.arrange(p_MLEboot.alpha, p_MLEboot.beta, ncol = 2)
 ```
 
+```{r}
+ttest <- t.test(x = grades$Total, mu = 0.70, conf.level = 0.99) %>%
+tidy()
+
+ttest %>% 
+kable() %>% 
+kable_styling(latex_options = "hold_position")
+```
+
 The parametric bootstrap confidence interval (CI) for alpha is [4.797, 7.740], and for beta is [2.108, 3.438].
 
-The lecturer advised that the average mark would be approximately 70%, with most students falling within about 10% of that grade. Since alpha lies between 4.797 and 7.740, it does not fully encompass the entire 10% gap that the lecturer suggested; instead, it is more toward the lower end. However, it does cover the average mark of 70%.
+The lecturer advised that the average mark would be approximately 70%, with most students falling within about 10% of that grade. 
+
+We are 99% confident that the population value $\mu$ is contained within our 99% confidence interval of [0.665, 0.721].
+
+Since $\mu$ lies between 0.665 and 0.721, it does cover the average mark of 70% and meets the lecturer's goal.
 
 ### Using the MLE’s, what is the estimated proportion of students within 15% of the average? According to the lecturer’s benchmark, what proportion would have failed? How many would get HD’s? [4 marks]
 
+The lower and upper bounds of the 15% range are:
+
+```{r}
+lowerbound <- 0.693 - 0.15 
+upperbound <- 0.693 + 0.15
+```
+
+```{r}
+pbeta(upperbound, shape1=5.95, shape2=2.63) - pbeta(lowerbound, shape1=5.95, shape2=2.63)
+```
+
+This gives us a probability of 0.666, which means that we estimate that 66.6% of students will fall within 15% of the average.
+
+According to the lecturer's benchmark, a student who scores below 60% is considered to have failed. We can use the `pbeta()` function to calculate the proportion of students who are expected to fail:
+
+```{r}
+pbeta(0.6, shape1=5.95, shape2=2.63)
+```
+
+This gives us a proportion of 0.254, which means that we estimate that 25.4% of students will fail.
+
+To calculate the number of students who are expected to get HD's, 
+
+```{r}
+(1 - pbeta(0.8, shape1=5.95, shape2=2.63))*193
+```
+51 students are expected to get HD's.
+
 ### Overall, do you think that the quiz achieved the lecturer’s aims? [4 marks]
 
+Overall, I would say that the quiz achieved the lecturer's aims. The average mark fell around 70%, which is within the range that was expected for the lecturer. Additionally, 66.6% of students scored within 15% of the MLE mean of the grades, which suggests that the quiz was fair and that students were able to demonstrate their understanding of the material. However, the benchmark of 60% could be considered quite high, as 25.4% of the class failed. This suggests that the quiz may have been too difficult for some students, and that the lecturer may want to reconsider the benchmark in the future.
 
 ## Task 2 - Are Postgrad students better? [30 marks]
 
