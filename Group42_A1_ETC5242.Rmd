@@ -22,6 +22,7 @@ knitr::opts_chunk$set(
 ```{r loading-data}
 library(tidyverse)
 library(broom)
+library(MASS)
 grades <- read_csv("data/GradesData.csv")
 ```
 
@@ -36,19 +37,125 @@ grades <- grades %>%
 ### Traditionally Normal distributions have been used to model grade distributions. Plot your data and explain whether you think that this is good idea in this instance. [3 marks]
 
 ```{r}
-library(MASS)
-x <- c(grades$Total)
-normal_fit <- fitdistr(x, "normal")
+normal_histogram <- ggplot(grades, aes(x = Total)) +
+  geom_histogram(colour = "green")
+
+normal_histogram
+```
+Data is skewed, better to use a beta distribution. 
+eventhough its a continious 
+###An alternative is the beta distribution. Explain why this may be a valid alternative in this case.
+
+```{r}
+beta_histogram <- ggplot(grades, aes(x = Total)) +
+  geom_histogram(colour = "green")
+
+beta_histogram
+```
+Can be used as data slightly skewed. Beta distribution uses data that represents probabilities or proportions.
+###Use Maximum Likelihood to fit both a Normal and Beta distribution to the grades. Use a Bootstrap QQplot to assess the fit of each.
+#### Normal Distribution:
+```{r}
+normal_fit <- fitdistr(grades$Total, "normal")
 normal_fit %>% tidy()
+n <- 139
+mu.true <- normal_fit$estimate[1]
+sig.true <- normal_fit$estimate[2]
+x <- rnorm(n, mean = mu.true, sd = sig.true)
+dt <- tibble(id = 1:n, x = x)
 
-
-normpdf <- grades %>% ggplot(aes(x=x, y=after_stat(density))) +
-  geom_histogram(colour="blue", fill="blue", alpha=0.2, bins=30) +
-  geom_density(colour="green", fill="green", alpha=0.2)
-
+normpdf <- dt %>% ggplot(aes(x=x, y=after_stat(density))) +
+geom_histogram(colour="blue", fill="blue", alpha=0.2) +
+geom_density(colour="green", fill="green", alpha=0.2) +
+xlab("simulated draws")
 normpdf
 ```
+#### Beta Distribution:
+```{r}
+n <- 139
+beta_fit <- fitdistr(grades$Total, "beta", start = list(shape1 = 1, shape2 = 1))
+alpha.true <- beta_fit$estimate[1]
+beta.true <- beta_fit$estimate[2]
+xbeta <- rbeta(n, shape1 = alpha.true, shape2 = beta.true)
+dt <- tibble(id = 1:n, x = xbeta)
 
+betapdf <- dt %>%
+ggplot(aes(x = xbeta, y = after_stat(density))) +
+geom_histogram(colour = "blue", fill = "blue", alpha = 0.2) +
+geom_density(colour = "green", fill = "green", alpha = 0.2) +
+xlab("Simulated draws")
+beta_fit %>% tidy()
+betapdf
+```
+###The lecturer is interested in trying the Beta distribution. Use your MLE’s to report the mean and the median of the grade distribution
+```{r}
+beta_mean <- beta_fit$estimate[1] / (beta_fit$estimate[1] + beta_fit$estimate[2])
+beta_median <- qbeta(0.5,beta_fit$estimate[1],beta_fit$estimate[2])
+
+beta_mean %>% tidy()
+beta_median %>% tidy()
+```
+
+###Plot and interpret a 99% parametric bootstrap of the mean of the beta distribution
+```{r, warning=FALSE}
+bootplot.f<- function(stat.boot, bins=50){
+  
+  df <- tibble(stat = stat.boot)
+  CI <- round(quantile(stat.boot, c(0.025, 0.975)),2)
+  
+  p <- df %>% ggplot(aes(x=stat, y=after_stat(density))) +  
+    geom_histogram(bins=bins, colour="grey", fill="grey", alpha=0.2) + 
+    geom_density(fill="green", colour="green", alpha=0.2) +
+    geom_vline(xintercept = CI, colour = "black", linetype=5) +
+    theme_bw()
+  
+  p
+}
+
+MLE.x <- beta_fit$estimate
+MLE_SE.x <- beta_fit$sd
+CLT.MLE.LCI <- MLE.x + qnorm(0.025)*MLE_SE.x
+CLT.MLE.UCI <- MLE.x + qnorm(0.975)*MLE_SE.x
+CLT.MLE.LCI
+
+
+B <- 5000
+param <- 2
+MLE.x_boot <- matrix(rep(NA,param*B), nrow=B, ncol=param)
+for(i in 1:B){
+temp <- sample(dt$x, size=n, replace=TRUE)
+MLE.x_boot[i,] <- fitdistr(temp, "normal")$estimate
+}
+boot.LCI.mu <- quantile(MLE.x_boot[,1], c(0.025, 0.975))
+boot.LCI.mu
+
+boot.LCI.sig <- quantile(MLE.x_boot[,2], c(0.025, 0.975))
+boot.LCI.sig
+
+p_MLEboot.mu <- bootplot.f(MLE.x_boot[,1], bins=100)
+p_MLEboot.sig <- bootplot.f(MLE.x_boot[,2], bins=100)
+grid.arrange(p_MLEboot.mu, p_MLEboot.sig, ncol=2)
+```
+
+###Using the MLE’s, what is the estimated proportion of students within 15% of the average? According to the lecturer’s benchmark, what proportion would have failed?
+```{r}
+upper <- beta_mean + 0.15 * beta_mean
+lower <- beta_mean - 0.15 * beta_mean
+
+between15 <- pbeta(upper,alpha.true, beta.true) - pbeta(lower,alpha.true, beta.true) 
+
+failed <- pbeta(0.60,alpha.true, beta.true)
+hd <- 1 - pbeta(0.80,alpha.true, beta.true)
+
+between15 %>% tidy
+failed %>% tidy
+hd %>% tidy
+```
+
+###Overall, do you think that the quiz achieved the lecturer’s aims?
+```{r}
+
+```
 
 ## Task 2 - Are Postgrad students better? [30 marks]
 
