@@ -59,6 +59,8 @@ A normal distribution may be a good idea in this instance since the visualisatio
 
 The beta distribution is also a viable option. To use it, we'll need to determine the parameter estimates $\alpha$ and $\beta$. Observing that the distribution shows a slight leftward tendency, the beta distribution may be well-suited for this situation. Additionally, since the test scores range from 0 to 1, the beta distribution's domain aligns with the data range.
 
+Positive values
+
 ### Use Maximum Likelihood to fit both a Normal and Beta distribution to the grades. Use a Bootstrap QQplot to assess the fit of each. Which distribution do you recommend? Be sure to briefly explain your reasoning. [8 marks]
 
 **1. Normal distribution**
