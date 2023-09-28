@@ -1,7 +1,7 @@
 ---
 title: "ETC5242 Assignment 1"
 subtitle: "Group 42"
-author: "Khuyen Nguyen: kngu0086@student.monash.edu, Evan Ginting: , Rachitha Werake: "
+author: "Khuyen Nguyen: kngu0086@student.monash.edu, Evan Ginting: 33477558, Rachitha Werake: "
 output: pdf_document
 ---
 
@@ -21,6 +21,7 @@ knitr::opts_chunk$set(
 
 ```{r loading-data}
 library(tidyverse)
+library(gridExtra)
 grades <- read_csv("data/GradesData.csv")
 ```
 
@@ -30,10 +31,215 @@ grades <- read_csv("data/GradesData.csv")
 ```{r}
 grades <- grades %>%
   filter(Total != 0)
+
+summary(grades)
 ```
 
 ### Traditionally Normal distributions have been used to model grade distributions. Plot your data and explain whether you think that this is good idea in this instance. [3 marks]
+```{r}
+grades %>%
+  ggplot(aes(x = Total, y = after_stat(density))) +
+  geom_histogram(colour = "blue", fill = "blue", alpha = 0.2, bins = 30) +
+  geom_density(colour = "blue", fille = "blue", alpha = 0.2) +
+  ggtitle("Histogram of Total Score (n = 193)") +
+  xlab("Total Score") +
+  theme_bw()
+```
+- As can be seen from the plot, the distribution of total score is left-skewed. Most of the score are recorded within the higher range of the scale (>= 0.6), with a long tail towards the lower range (< 0.6)
+- A normal distribution, being symmetric, may not be able to capture this skewness. Hence, it is probably not a good idea to use normal distribution to fit sample score for this case. 
 
+### An alternative is the beta distribution. Explain why this may be a valid alternative in this case. [2 marks]
+- 
+
+### Use Maximum Likelihood to fit both a Normal and Beta distribution to the grades. Use a Bootstrap QQplot to assess the fit of each. Which distribution do you recommend? Be sure to briefly explain your reasoning. [8 marks]
+
+```{r}
+# Define functions at the start - so you will have it when you need it ########### the bootplot.f function ############
+
+bootplot.f<- function(stat.boot, bins=50, a=.01){
+df <- tibble(stat = stat.boot) 
+CI <- round(quantile(stat.boot, c(a/2, 1-a/2)),2) 
+p <- df %>% ggplot(aes(x=stat, y=after_stat(density))) + 
+  geom_histogram(bins=bins, colour="magenta", fill="magenta", alpha=0.2) + 
+  geom_density(fill="magenta", colour="magenta", alpha=0.2) + 
+  geom_vline(xintercept = CI, colour = "magenta", linetype=5) + 
+  theme_bw()
+
+p
+}
+```
+
+
+**Normal Distribution Fit**
+```{r}
+library(MASS) 
+library(broom)
+x <- grades$Total
+n <- nrow(grades) 
+df <- tibble(id = 1:n, x = x)
+
+normal_fit <- fitdistr(x, "normal")
+normal_fit %>% tidy()
+```
+
+**QQplot Normal Distribution**
+```{r}
+params <- normal_fit$estimate 
+
+p <- ggplot(df, aes(sample = x)) + 
+  stat_qq(distribution = qnorm, dparams = params) + 
+  stat_qq_line(distribution = qnorm, dparams = params, color = "black") +
+  theme(aspect.ratio = 1) + theme_bw() + 
+  xlab("Theoretical") + ylab("Sample")
+p
+```
+
+
+**Assessing the fitness of normal distribution using Bootstrap QQplot**
+```{r}
+set.seed(13) #replace mydata with x as above
+
+MLE.x <- normal_fit$estimate # point estimate 
+
+boot.seq <- seq(1,n,1)/n-1/(2*n) 
+
+B <- 500 
+
+MLE.x_boot <- matrix(rep(NA,2*B), nrow = B, ncol = 2) 
+for(i in 1:B){ 
+  temp <- sample(df$x, size = n, replace = TRUE) 
+  df <- df %>% mutate(temp = temp) 
+  MLE.x_boot[i,] <- fitdistr(temp, "normal")$estimate 
+  params_boot <- MLE.x_boot[i,] 
+  p <- p + stat_qq(aes(sample = temp), distribution = qnorm, dparams = params_boot, colour = "grey", alpha = 0.2)
+} 
+
+p <- p + stat_qq(aes(sample = x), distribution = qnorm, dparams = params) +
+  ggtitle("QQ plot with B=500 Bootstrap replicates (Normal Distribution)")
+
+p
+```
+
+
+
+**Beta Distribution Fit**
+```{r, warning = FALSE}
+set.seed(2020.06)
+
+n <- 193 
+#alpha.true <- 0.6 
+#beta.true <- 0.4 
+
+#x_beta <- rbeta(n, shape1 = alpha.true, shape2 = beta.true)
+dt <- tibble(id = 1:n, x = x)
+
+betadist_fit <- fitdistr(x, "beta", start = list(shape1 = 1, shape2 = 1)) 
+betadist_fit
+```
+```{r}
+p1_betapdf <- dt %>% 
+  ggplot(aes(x = x, y = after_stat(density))) + 
+  geom_histogram(colour = "blue", fill = "blue", alpha = 0.2) + 
+  geom_density(colour = "blue", fill = "blue", alpha = 0.2) + 
+  ggtitle("Histogram of n=193 draws simulated") + xlab("Simulated draws") + theme_bw()
+p1_betapdf
+```
+
+
+
+```{r}
+betadist_fit %>% tidy()
+```
+
+**QQplot Beta Distribution**
+```{r}
+params_betadist <- betadist_fit$estimate 
+
+p_betadist <- ggplot(dt, aes(sample = x)) + 
+  stat_qq(distribution = qbeta, dparams = params_betadist) + 
+  stat_qq_line(distribution = qbeta, dparams = params_betadist, color = "black") +
+  theme(aspect.ratio = 1) + theme_bw() + 
+  xlab("Theoretical") + ylab("Sample")
+p_betadist
+```
+
+
+**Assessing the fitness of beta distribution using Bootstrap QQplot**
+```{r, warning = FALSE}
+set.seed(13)
+
+MLE.x <- betadist_fit$estimate  
+
+boot.seq <- seq(1,n,1)/n-1/(2*n) 
+
+B <- 500 
+
+MLE.x_boot <- matrix(rep(NA, 2*B), nrow = B, ncol = 2) 
+for(i in 1:B){ 
+  temp <- sample(dt$x, size = n, replace = TRUE) 
+  dt <- dt %>% mutate(temp = temp) 
+  MLE.x_boot[i,] <- fitdistr(temp, "beta", start = list(shape1 = 1, shape2 = 1))$estimate 
+  params_boot <- MLE.x_boot[i,] 
+  p_betadist <- p_betadist + stat_qq(aes(sample = temp), distribution = qbeta, dparams = params_boot, colour = "grey", alpha = 0.2)
+} 
+
+p_betadist <- p_betadist + stat_qq(aes(sample = x), distribution = qbeta, dparams = params_betadist) +
+  ggtitle("QQ plot with B=500 Bootstrap replicates (Beta Distribution)")
+
+p_betadist
+```
+
+
+### The lecturer is interested in trying the Beta distribution. Use your MLE’s to report the mean and the median of the grade distribution (recall that the mean is a function of the shape and rate parameters). Be sure to interpret these values. [4 marks]
+```{r}
+alpha <- as.numeric(betadist_fit$estimate[1])
+beta <- as.numeric(betadist_fit$estimate[2])
+mean <- alpha/(alpha + beta)
+median <- qbeta(0.5, alpha, beta)
+```
+The lecturer hope that the average mark would be around 70%. According to the mean of beta distribution, we get `r round(mean*100,2)`% which is very close to 70%. With this number, We would say that the mean of grade distribution is aligned with what the lecturer's target.
+
+
+### Plot and interpret a 99% parametric bootstrap of the mean of the beta distribution (HINT: set warning=FALSE in your code chunk). Did the average quiz mark match the lecturer’s goal? [4 marks]
+```{r, warning=FALSE}
+set.seed(13) 
+
+B <- 500
+MLE.x_boot <- matrix(rep(NA,2*B), nrow=B, ncol=2) 
+MLE.x_mean <- matrix(nrow = B, ncol = 1)
+for(i in 1:B){ 
+  temp <- sample(dt$x, size=n, replace=TRUE) 
+  MLE.x_boot[i,] <- fitdistr(temp, "beta", start = list(shape1 = 1, shape2 = 1))$estimate
+  MLE.x_mean[i] <- as.numeric(MLE.x_boot[i,1]) / (as.numeric(MLE.x_boot[i,1]) + as.numeric(MLE.x_boot[1,2]))
+}
+boot.LCI.mean <- quantile(MLE.x_mean[], c(0.005, 0.995))
+boot.LCI.mean
+
+p_MLEboot.mean <- bootplot.f(MLE.x_mean[], bins = 100) +
+  ggtitle("Sampling distribution for MLE of mean of beta distribution of grades") +
+  xlab("MLE of mean") +
+  theme(title = element_text(size = 8))
+
+p_MLEboot.mean
+```
+
+
+
+### Using the MLE’s, what is the estimated proportion of students within 15% of the average? According to the lecturer’s benchmark, what proportion would have failed? How many would get HD’s? [4 marks]
+```{r}
+lower_bound <- mean - 0.15 * mean
+upper_bound <- mean + 0.15 * mean
+within_15_prct <- pbeta(upper_bound, alpha, beta) - pbeta(lower_bound, alpha, beta)
+
+failed <- pbeta(0.60, alpha, beta)
+hd <- 1 - pbeta(0.80, alpha, beta)
+```
+- From the beta distribution, there are `r round(within_15_prct*100, 2)`% student that is within 15% of the average.
+- Assuming that "Pass" is above 60%, then the proportion of student that failed the quiz is `r round(failed*100,2)`%, which is `r floor(failed*193)` students out of 193.
+- Assuming that "HD" is above 80%, then the proportion of student that got HD is `r round(hd*100,2)`%, which is `r floor(hd*193)` students out of 193.
+
+
+### Overall, do you think that the quiz achieved the lecturer’s aims? [4 marks]
 
 
 ## Task 2 - Are Postgrad students better? [30 marks]
