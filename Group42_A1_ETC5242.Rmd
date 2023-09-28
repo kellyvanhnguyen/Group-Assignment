@@ -205,7 +205,7 @@ The lecturer hope that the average mark would be around 70%. According to the me
 set.seed(13) 
 
 B <- 500
-MLE.x_boot <- matrix(rep(NA,2*B), nrow=B, ncol=2) 
+MLE.x_boot <- matrix(nrow=B, ncol=2) 
 MLE.x_mean <- matrix(nrow = B, ncol = 1)
 for(i in 1:B){ 
   temp <- sample(dt$x, size=n, replace=TRUE) 
@@ -221,6 +221,9 @@ p_MLEboot.mean <- bootplot.f(MLE.x_mean[], bins = 100) +
   theme(title = element_text(size = 8))
 
 p_MLEboot.mean
+```
+```{r}
+p_MLEboot.mean$
 ```
 
 
@@ -240,6 +243,7 @@ hd <- 1 - pbeta(0.80, alpha, beta)
 
 
 ### Overall, do you think that the quiz achieved the lecturer’s aims? [4 marks]
+
 
 
 ## Task 2 - Are Postgrad students better? [30 marks]
