@@ -285,6 +285,67 @@ There are more students enrolled in the undergraduate cohort, with a higher numb
 
 ### Conduct a permutation test with 5000 replications. Plot the sampling distribution of your test. [4 marks]
 
-test
+```{r}
+n <- nrow(grades)
+
+T3grades <- grades %>%
+  select(Cohort, Result)
+
+xobs <- grades3$Prop[grades3$Cohort=='PG'] - grades3$Prop[grades3$Cohort=='UG']
+
+R <- 5000
+
+Rxobs <- array(dim = R)
+
+set.seed(2020.3)
+
+RGrades <- T3grades
+
+for (r in 1:R) {
+
+  RGrades <- RGrades %>% mutate(Cohort = sample(RGrades$Cohort, n, replace=FALSE))
+  
+  RGDSS3 <- RGrades %>% 
+    group_by(Cohort, Result) %>% 
+    tally() %>%
+    ungroup() %>% 
+    pivot_wider(names_from = Result, values_from = n) %>%
+    mutate(total = `Fail` + Pass) %>% 
+    mutate(prop = round(Pass/total, digits=3))
+ 
+  Rxobs[r] <- RGDSS3$prop[grades3$Cohort =='PG'] - RGDSS3$prop[grades3$Cohort =='UG']
+}
+
+pval <- sum(Rxobs >= xobs)/R
+options(digits = 4)
+
+Rxobs_tbl <- as_tibble(Rxobs) %>% mutate(r=1:R)
+
+Rxobs_tbl %>%
+  ggplot(aes(value)) +
+  geom_histogram(colour="blue", fill="blue", alpha=0.5, bins=R)  +
+  xlab(expression(xobs^"[r]")) + 
+  ggtitle(expression(paste("Approximate sampling distribution of ", hat(p)[M] - hat(p)[F], " under ", H[0]))) +
+  geom_vline(xintercept=xobs, color="red")
+
+```
+###What is the result of this test? (Be sure to properly define the null and alternative hypothesis and discuss the result of the test). [8 marks]
+
+The Null Hypothesis (H0): There is no difference between the grade rates of the undergraduate students and the postgraduate students.
+
+The Alternative Hypothesis (HA): The is evidence present that shows that there is a difference between the grade rates of the undergraduate and the postgraduate students. 
+
+The P-value is equal to : 0.298
+
+The plot represents a sampling distribution of proportion differences generated under the assumption that H0 is true (i.e. that postgraduate students perform better than undergraduate students). The red line shows the proportion difference that we observed from our sample.
+
+Based on the plot and the p-value, we can say with 95% confidence that there is not enough evidence to reject the null hypothesis (H0), thus, it can be concluded that there is no difference between the grade rates of the postgraduate and the undergraduate students.
+
+Based on the plot and the p-value, we can say with 99% confidence that there is not enough evidence to reject the null hypothesis (H0), thus, it can be concluded that there is no difference between the grade rates of the postgraduate and the undergraduate students.
+
+###The lecturer may be confused as to why such a large difference in proportions does not have a p-value of almost 0. Explain why this may occur. [4 marks]
+P-value's are based and influenced on various factors such as the chosen alpha (e.g. a 95% confidence level will mean that there will be a 5% chance of an error occurring), the sample size and the observed difference, as such a large difference within the proportions may not always lead to a p-value close to 0. 
+
+
 
 ## Task 3 - Bayesian Analysis [33 marks]
