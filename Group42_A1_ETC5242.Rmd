@@ -356,9 +356,11 @@ beta_binomial <- function(n, x, alpha = 1, beta = 1) {
 
 
 ### Suggest (and justify) an appropriate prior distribution for the proportion of postgraduate students who “passed” and one for the proportion of undergraduate students who “passed”. [2 marks]
-Beta Distribution. 
+Beta Binomial Distribution. 
+
 
 ### State the posterior distributions for the proportion of postgraduate students who “passed” and one for the proportion of undergraduate students who “passed”. [2 marks]
+
 
 
 ### Obtain 95% credible intervals for the proportion postgraduate students who “passed” and for the proportion of undergraduate students who “passed”. Comment on how these two intervals compare to each other. [4 marks]
@@ -389,6 +391,9 @@ Posterior_PG
 ## Estimator that minimises the posterior expected squared loss for PG
 E_PG <- Posterior_PG$alpha_tilde / Posterior_PG$beta_tilde
 E_PG
+
+
+
 
 # UG STUDENTS
 ## Posterior and Credibility Factor Calculation
@@ -458,6 +463,7 @@ grid.arrange(p1,p2, nrow = 2)
 
 
 ### The lecturer wishes to do this again next semester. What priors do you suggest that she use? Explain your reasoning. [2 marks]
+
 
 
 The lecturer wants to analyse the difference in proportions of “passing” for the two cohorts.
