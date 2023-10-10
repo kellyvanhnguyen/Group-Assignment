@@ -349,9 +349,48 @@ A lower alpha level implies a stricter criterion for significance, resulting in 
 
 ### Suggest (and justify) an appropriate prior distribution for the proportion of postgraduate students who “passed” and one for the proportion of undergraduate students who “passed”. [2 marks]
 
+An appropriate prior distribution for the proportion of postgraduate students who "passed" and one for the proportion of undergraduate students who "passed" would be a beta distribution. 
+
+A beta distribution is appropriate because: 
+  - Beta distributions are conjugate to the binomial distribution, which can model our binary outcomes of pass and fail.
+  - The beta distribution is also flexible using shape parameters alpha and beta to represent a more accurate belief on our prior beliefs or available data. For example, when we modelled our data before it was slightly skewed.
+  - It also ranges between 0 and 1, which is accurate for our analysis.
+
 ### State the posterior distributions for the proportion of postgraduate students who “passed” and one for the proportion of undergraduate students who “passed”. [2 marks]
 
+The posterior distribution for the proportion of postgraduate students who "passed" and the proportion of undergraduate students who "passed" remains in the form of a beta distribution. 
+
+The formula $\text{Posterior} \propto \text{Likelihood} \times \text{Prior}$ means: The posterior is proportional to the likelihood multiplied by the prior. When updating our prior belief with the likelihood (which follows a binomial distribution), we obtain a new beta distribution for the posterior. The parameters of this posterior beta distribution are updated based on the data and prior information. 
+
+The beta distribution is parameterised by two shape parameters, alpha and beta, and after updating, these parameters will have new values that reflect our updated beliefs and knowledge about the proportions of students who "passed".
+
 ### Obtain 95% credible intervals for the proportion postgraduate students who “passed” and for the proportion of undergraduate students who “passed”. Comment on how these two intervals compare to each other. [4 marks]
+
+```{r}
+post_grad <- grades %>% 
+  filter(Cohort == "PG")
+
+under_grad <- grades %>% 
+  filter(Cohort == "UG")
+
+p <- post_grad$Total
+u <- under_grad$Total
+
+post_fit <- fitdistr(p, "beta", start = list(shape1 = 1, shape2 = 1))
+post_fit %>% tidy()
+
+under_fit <- fitdistr(u, "beta", start = list(shape1 = 1, shape2 = 1))
+under_fit %>% tidy()
+```
+
+```{r}
+qbeta(c(0.025, 0.975), 9.501, 3.598) #postgrad
+qbeta(c(0.025, 0.975), 5.332, 2.468) #undergrad
+```
+
+There is a 95% probability that the true proportion of postgraduate students who passed falls within the range of 0.4656 to 0.9204.
+
+There is a 95% probability that the true proportion of undergraduate students who passed falls within the range of 0.3442 to 0.9352.
 
 ### Obtain and interpret the estimator that minimises the posterior expected squared error loss for the proportion of students who “passed” for a given cohort. Is this in a form that linearly combines a purely data-based estimator and some prior quantity? If so, quantify the contribution of the databased estimator by deriving the credibility factor. Using the data, calculate the estimate and credibility factor for both cohorts of students. [8 marks]
 
