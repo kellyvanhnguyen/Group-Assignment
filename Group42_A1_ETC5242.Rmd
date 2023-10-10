@@ -366,8 +366,6 @@ The beta distribution is parameterised by two shape parameters, alpha and beta, 
 
 ### Obtain 95% credible intervals for the proportion postgraduate students who “passed” and for the proportion of undergraduate students who “passed”. Comment on how these two intervals compare to each other. [4 marks]
 
-
-
 There is a 95% probability that the true proportion of postgraduate students who passed falls within the range of x to x.
 
 There is a 95% probability that the true proportion of undergraduate students who passed falls within the range of x to x.
