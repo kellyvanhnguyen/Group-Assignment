@@ -300,7 +300,7 @@ for (r in 1:R) {
     mutate(Total = Fail + Pass) %>% 
     mutate(Prop = round(Pass/Total, digits=3))
  
-  Rxobs[r] <- Rgrades3$Prop[grades3$Cohort=='UG'] - Rgrades3$Prop[grades3$Cohort=='PG']
+  Rxobs[r] <- Rgrades3$Prop[grades3$Cohort=='PG'] - Rgrades3$Prop[grades3$Cohort=='UG']
   
 }
 
@@ -317,7 +317,7 @@ Rxobs_tbl %>%
   ggplot(aes(value)) +
   geom_histogram(colour="blue", fill="blue", alpha=0.5, bins=R)  +
   xlab(expression(xobs^"[r]")) + 
-  ggtitle(expression(paste("Approximate sampling distribution of ", hat(p)[UG] - hat(p)[PG], " under ", H[0]))) +
+  ggtitle(expression(paste("Approximate sampling distribution of ", hat(p)[PG] - hat(p)[UG], " under ", H[0]))) +
   geom_vline(xintercept=xobs, color="red")
 ```
 
@@ -329,7 +329,7 @@ Null Hypothesis ($H_0$): There is no difference in pass and fail rates between t
 Alternative Hypothesis ($H_1$): There is evidence to suggest that there is a difference between the pass and fail rates of the UG and PG cohorts.
 
 Using a 95% confidence interval ($\alpha$ = 0.05), which is equal to 1 - $\alpha$ and $\alpha$/2:
-The $p$-value of the test is 0.0246, which is less than 0.05, given a confidence level of 95%.
+The $p$-value of the test is 0.0292 which is less than 0.05, given a confidence level of 95%.
 
 Therefore, there is significant evidence to reject the null hypothesis in favour of the alternative hypothesis: there is a difference between the pass and fail rates of the UG and PG cohorts
 
