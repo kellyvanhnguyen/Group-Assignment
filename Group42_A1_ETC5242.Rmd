@@ -286,7 +286,7 @@ There are more students enrolled in the undergraduate cohort (145 compared to 48
 n <- nrow(grades)
 R <- 5000
 Rxobs <- array(dim = R)
-set.seed(2020.3)
+set.seed(10)
 Rgrades <- grades
 
 for (r in 1:R) {
@@ -317,7 +317,7 @@ Rxobs_tbl %>%
   ggplot(aes(value)) +
   geom_histogram(colour="blue", fill="blue", alpha=0.5, bins=R)  +
   xlab(expression(xobs^"[r]")) + 
-  ggtitle(expression(paste("Approximate sampling distribution of ", hat(p)[PG] - hat(p)[UG], " under ", H[0]))) +
+  ggtitle(expression(paste("Approximate sampling distribution of ", hat(p)[UG] - hat(p)[PG], " under ", H[0]))) +
   geom_vline(xintercept=xobs, color="red")
 ```
 
@@ -329,7 +329,7 @@ Null Hypothesis ($H_0$): There is no difference in pass and fail rates between t
 Alternative Hypothesis ($H_1$): There is evidence to suggest that there is a difference between the pass and fail rates of the UG and PG cohorts.
 
 Using a 95% confidence interval ($\alpha$ = 0.05), which is equal to 1 - $\alpha$ and $\alpha$/2:
-The $p$-value of the test is 0.0284, which is less than 0.05, given a confidence level of 95%.
+The $p$-value of the test is 0.0246, which is less than 0.05, given a confidence level of 95%.
 
 Therefore, there is significant evidence to reject the null hypothesis in favour of the alternative hypothesis: there is a difference between the pass and fail rates of the UG and PG cohorts
 
