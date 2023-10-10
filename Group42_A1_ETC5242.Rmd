@@ -366,31 +366,11 @@ The beta distribution is parameterised by two shape parameters, alpha and beta, 
 
 ### Obtain 95% credible intervals for the proportion postgraduate students who “passed” and for the proportion of undergraduate students who “passed”. Comment on how these two intervals compare to each other. [4 marks]
 
-```{r}
-post_grad <- grades %>% 
-  filter(Cohort == "PG")
 
-under_grad <- grades %>% 
-  filter(Cohort == "UG")
 
-p <- post_grad$Total
-u <- under_grad$Total
+There is a 95% probability that the true proportion of postgraduate students who passed falls within the range of x to x.
 
-post_fit <- fitdistr(p, "beta", start = list(shape1 = 1, shape2 = 1))
-post_fit %>% tidy()
-
-under_fit <- fitdistr(u, "beta", start = list(shape1 = 1, shape2 = 1))
-under_fit %>% tidy()
-```
-
-```{r}
-qbeta(c(0.025, 0.975), 9.501, 3.598) #postgrad
-qbeta(c(0.025, 0.975), 5.332, 2.468) #undergrad
-```
-
-There is a 95% probability that the true proportion of postgraduate students who passed falls within the range of 0.4656 to 0.9204.
-
-There is a 95% probability that the true proportion of undergraduate students who passed falls within the range of 0.3442 to 0.9352.
+There is a 95% probability that the true proportion of undergraduate students who passed falls within the range of x to x.
 
 ### Obtain and interpret the estimator that minimises the posterior expected squared error loss for the proportion of students who “passed” for a given cohort. Is this in a form that linearly combines a purely data-based estimator and some prior quantity? If so, quantify the contribution of the databased estimator by deriving the credibility factor. Using the data, calculate the estimate and credibility factor for both cohorts of students. [8 marks]
 
