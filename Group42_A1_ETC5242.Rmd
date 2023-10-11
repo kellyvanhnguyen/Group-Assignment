@@ -1,7 +1,7 @@
 ---
 title: "ETC5242 Assignment 1"
 subtitle: "Group 42"
-author: "Khuyen Nguyen: kngu0086@student.monash.edu, Evan Ginting: 33477558, Rachitha Werake: 33519048"
+author: "Khuyen Nguyen: 33533113, Evan Ginting: 33477558, Rachitha Werake: 33519048"
 output: pdf_document
 ---
 
@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r loading-data}
+```{r loading-data, echo=FALSE}
 library(broom)
 library(gridExtra)
 library(kableExtra)
@@ -41,21 +41,19 @@ grades %>%
   ggplot(aes(x = Total, y = after_stat(density))) +
   geom_histogram(colour = "blue", fill = "blue", alpha = 0.2, bins = 30) +
   geom_density(colour = "blue", fill = "blue", alpha = 0.2) +
-  ggtitle("Distribution of Total Score (n = 193)") +
+  ggtitle("Distribution of Total Scores (n = 193)") +
   xlab("Total Score") +
   theme_bw()
 ```
-- As can be seen from the plot, the distribution of total score is left-skewed. Most of the score are recorded within the higher range of the scale (>= 0.6), with a long tail towards the lower range (< 0.6).
-- A normal distribution, being symmetric, may not be able to capture this skewness perfectly. Hence, it is probably not a best idea to use normal distribution to fit sample score for this case. 
+- As can be seen from the plot, the distribution of total scores is left-skewed. Most of the scores are recorded within the higher range of the scale (>= 0.6), with a long tail towards the lower range (< 0.6).
+- A normal distribution, being symmetric, may not be able to capture this skewness perfectly. Hence, it is probably not the best idea to use a normal distribution to fit sample scores for this case. 
 
 
 ### An alternative is the beta distribution. Explain why this may be a valid alternative in this case. [2 marks]
-The beta distribution is also a viable option. To use it, we'll need to determine the parameter estimates $\alpha$ and $\beta$. Observing that the distribution shows a left-skewed, the beta distribution may be well-suited for this situation. Additionally, since the test scores range from 0 to 1, the beta distribution's domain aligns with the data range.
+The beta distribution is also a viable option. To use it, we'll need to determine the parameter estimates $\alpha$ and $\beta$. Observing that the distribution shows a left-skew, the beta distribution may be well-suited for this situation. Additionally, since the test scores range from 0 to 1, the beta distribution's domain aligns with the data range.
 
 
 ### Use Maximum Likelihood to fit both a Normal and Beta distribution to the grades. Use a Bootstrap QQplot to assess the fit of each. Which distribution do you recommend? Be sure to briefly explain your reasoning. [8 marks]
-
-#### Normal Distribution
 
 **Normal Distribution Fit**
 ```{r}
@@ -78,7 +76,6 @@ p <- ggplot(df, aes(sample = x)) +
   theme_bw() + 
   ggtitle("QQ plot of Total Scores according to a Normal Distribution") +
   xlab("Theoretical") + ylab("Total Score")
-p 
 ```
 
 **Assessing the fitness of normal distribution using Bootstrap QQplot**
@@ -106,8 +103,6 @@ p <- p + stat_qq(aes(sample = x), distribution = qnorm, dparams = params) +
 p
 ```
 
-#### Beta Distribution
-
 **Beta Distribution Fit**
 ```{r, warning = FALSE}
 set.seed(10)
@@ -119,11 +114,7 @@ set.seed(10)
 dt <- tibble(id = 1:n, x = x)
 
 betadist_fit <- fitdistr(x, "beta", start = list(shape1 = 1, shape2 = 1)) 
-betadist_fit
-```
-
-```{r}
-betadist_fit %>% tidy() ##CHECK
+betadist_fit %>% tidy()
 ```
 
 **QQplot Beta Distribution**
@@ -137,8 +128,8 @@ p_betadist <- ggplot(dt, aes(sample = x)) +
   theme_bw() + 
   ggtitle("QQ plot of Total Scores according to a Beta Distribution") +
   xlab("Theoretical") + ylab("Sample")
-p_betadist
 ```
+
 **Assessing the fitness of beta distribution using Bootstrap QQplot**
 ```{r qqbeta_dist_boot, out.width = "100%", fig.align = "center", fig.width = 6, fig.height = 4, eval = TRUE, echo = TRUE, warning = FALSE}
 set.seed(10)
@@ -165,7 +156,7 @@ p_betadist
 ```
 
 #### Recommendation
-Based on the Bootstrap QQ plots, We would recommend using the Beta distribution. You can observe that the grey confidence intervals on the Beta distribution have fewer points deviating from the line compared to the Normal distribution. In the Normal distribution, points deviate at both the beginning and end of the line, whereas for the Beta distribution, the fit is only slightly off at the beginning.
+Based on the Bootstrap QQ plots, we would recommend using the Beta distribution. You can observe that the grey confidence intervals on the Beta distribution have fewer points deviating from the line compared to the Normal distribution. In the Normal distribution, points deviate at both the beginning and end of the line, whereas for the Beta distribution, the fit is only slightly off at the beginning.
 
 
 ### The lecturer is interested in trying the Beta distribution. Use your MLE’s to report the mean and the median of the grade distribution (recall that the mean is a function of the shape and rate parameters). Be sure to interpret these values. [4 marks]
@@ -259,105 +250,102 @@ grades <- grades %>%
 ```
 
 ### Report a table with the relevant proportions and discuss the result. [10 marks]
-
 ```{r}
-grades1 <- grades %>%
-  group_by(Result, Cohort) %>%
-  tally() %>%
-  ungroup()
+grades_s1 <- grades %>%
+              group_by(Cohort, Result) %>%
+              tally() %>%
+              ungroup()
 
-grades2 <- grades1 %>% 
-  pivot_wider(names_from = Result, values_from = n) 
+grades_s2 <- grades_s1 %>%
+              pivot_wider(names_from = Result, values_from = n)
 
-grades3 <- grades2 %>% 
-  mutate(Total = Fail + Pass) %>% 
-  mutate(Prop = round(Pass/Total, digits=3)) %>%
-  select(Cohort, Pass, Fail, Total, Prop) 
+grades_s3 <- grades_s2 %>%
+              mutate(Total = Fail + Pass) %>%
+              mutate(Prop = round(Pass/Total, digits = 3)) %>%
+              select(Cohort, Pass, Fail, Total, Prop)
 
-grades4 <- grades3 %>% 
-  arrange(desc(row_number())) 
+grades_s4 <- grades_s3 %>%
+              arrange(desc(row_number()))
 
-grades4 %>% 
-  kable() %>% 
+grades_s4 %>% 
+  kable(caption = "Proportion of Students who Passed or Failed") %>% 
   kable_styling()
 ```
-There are more students enrolled in the undergraduate cohort, with a higher number of students passing and failing than in the postgraduate cohort. However, there is a higher proportion of students who passed in the postgraduate cohort compared to the undergraduate cohort, with 82% passing compared to 68%.
+As can be seen from the table above, there are more Under-Graduate (UG) students who enroll in the unit with the total of 145 students, compare to Post-Graduate (PG) students with the total of 48 students. However, when discussing about the "Pass" rate, PG students score higher rate with 0.854, while UG students score 0.703, this is a difference of 0.151. In overall, this means, out of 48 PG students, 41 students are passed the quiz, while 7 students are failed, on the other hand, out of 145 UG students, 102 students are passed the unit, while 43 students are failed.
+
 
 ### Conduct a permutation test with 5000 replications. Plot the sampling distribution of your test. [4 marks]
-
+**Permutation Test**
 ```{r}
-n <- nrow(grades)
+xobs <- grades_s4$Prop[grades_s4$Cohort == "PG"] - grades_s4$Prop[grades_s4$Cohort == "UG"]
 
-T3grades <- grades %>%
-  select(Cohort, Result)
+n <- nrow(grades) 
+R <- 5000 
+Rxobs <- array(dim = R) 
 
-xobs <-  grades4$Prop[grades4$Cohort=='PG'] - grades4$Prop[grades4$Cohort=='UG']
+set.seed(10) 
 
-R <- 5000
-
-Rxobs <- array(dim = R)
-
-set.seed(10)
-
-RGrades <- T3grades
-
-for (r in 1:R) {
-
-  RGrades <- RGrades %>% mutate(Cohort = sample(RGrades$Cohort, n, replace=FALSE))
-  
-  RGDSS3 <- RGrades %>% 
+Rgrades <- grades 
+for (r in 1:R) { 
+  Rgrades <- Rgrades %>% 
+    mutate(Cohort = sample(Rgrades$Cohort, n, replace = FALSE))
+  Rgrades3 <- Rgrades %>% 
     group_by(Cohort, Result) %>% 
-    tally() %>%
+    tally() %>% 
     ungroup() %>% 
-    pivot_wider(names_from = Result, values_from = n) %>%
-    mutate(total = Fail + Pass) %>% 
-    mutate(prop = round(Pass/total, digits=3))
- 
-  Rxobs[r] <- RGDSS3$prop[grades3$Cohort =='PG'] - RGDSS3$prop[grades3$Cohort =='UG']
+    pivot_wider(names_from = Result, values_from = n) %>% 
+    mutate(Total = Fail + Pass) %>% 
+    mutate(Prop = round(Pass/Total, digits = 3))
+  Rxobs[r] <- Rgrades3$Prop[grades_s3$Cohort == "PG"] - Rgrades3$Prop[grades_s3$Cohort == "UG"]
 }
 
 pval <- sum(Rxobs >= xobs)/R
 options(digits = 4)
+```
 
+**Plotting the Sampling Distribution**
+```{r}
 Rxobs_tbl <- as_tibble(Rxobs) %>% mutate(r=1:R)
 
 Rxobs_tbl %>%
   ggplot(aes(value)) +
   geom_histogram(colour="blue", fill="blue", alpha=0.5, bins=R)  +
   xlab(expression(xobs^"[r]")) + 
-  ggtitle(expression(paste("Approximate sampling distribution of ", hat(p)[M] - hat(p)[F], " under ", H[0]))) +
-  geom_vline(xintercept=xobs, color="red")
-
+  ggtitle(expression(paste("Approximate sampling distribution of PG against UG"))) +
+  geom_vline(xintercept=xobs, color="red") +
+  theme_bw()
 ```
-###What is the result of this test? (Be sure to properly define the null and alternative hypothesis and discuss the result of the test). [8 marks]
 
-The Null Hypothesis (H0): There is no difference between the grade rates of the undergraduate students and the postgraduate students.
 
-The Alternative Hypothesis (HA): The is evidence present that shows that there is a difference between the grade rates of the undergraduate and the postgraduate students. 
+### What is the result of this test? (Be sure to properly define the null and alternative hypothesis and discuss the result of the test).
+In this case, we are interested in finding if PG students are actually better than UG students based on the quiz that they have taken. In doing so, we are going to perform upper one-sided hypothesis test, with $H_0$ and $H_1$ are:
+$$H_0: p_{PG}-p_{UG} = 0 \quad \mbox{vs.} \quad H_1: p_{PG}-p_{UG} > 0,$$
+where ${p}_{P}$ and ${p}_{U}$ denote the population proportions of Post-Graduate and Under-Graduate students passing the quiz, respectively. **H0 statement, H1 statement?**
 
-The P-value is equal to : `r pval`
+Based on the result that we have done previously, we have got p-value of the test is 0.0292. This suggest that based on the evidence we have, we reject the $H_0$. It means that it is likely there is a difference in the capability of PG students to pass the quiz compare to UG students, with PG students are better. To support this, we can see visually from the plot, our observed difference (the red line) is not likely to have come from a distribution which assumes that there are no difference between PG students and UG students, since it is far from 0.
 
-The plot represents a sampling distribution of proportion differences generated under the assumption that H0 is true (i.e. that postgraduate students perform better than undergraduate students). The red line shows the proportion difference that we observed from our sample.
 
-Based on the plot and the p-value, we can say with 95% confidence that there is evidence to reject the null hypothesis (H0), thus, it can be concluded that there is no difference between the grade rates of the postgraduate and the undergraduate students.
-
-Based on the plot and the p-value, we can say with 99% confidence that there is not enough evidence to reject the null hypothesis (H0), thus, it can be concluded that there is no difference between the grade rates of the postgraduate and the undergraduate students.
-
-###The lecturer may be confused as to why such a large difference in proportions does not have a p-value of almost 0. Explain why this may occur. [4 marks]
-P-value's are based and influenced on various factors such as the chosen alpha (e.g. a 95% confidence level will mean that there will be a 5% chance of an error occurring), the sample size and the observed difference, as such a large difference within the proportions may not always lead to a p-value close to 0. 
-
+### The lecturer may be confused as to why such a large difference in proportions does not have a p-value of almost 0. Explain why this may occur. [4 marks]
+The reason why this happens may significantly because of the sample size. As we know, the PG sample size is 48 while UG sample size is 145, they almost have hundred of different sample size. Since the p-value is influenced by the size of the sample, if we have small sample size, we have less data points to estimate population parameters accurately, which lead to a larger standard error (a measure of the variability of the sample). In turn, providing a lower test statistic. A lower test statistic contributes to a smaller p-value. 
 
 
 ## Task 3 - Bayesian Analysis [33 marks]
+
+The lecturer is curious about using Bayesian analysis to compare the proportion of postgraduate students who “passed” with undergraduate students who “passed”. The lecturer has no real opinion as to what the distribution of marks for each cohort would be.
+
 ```{r}
-beta_binomial <-function(n, x, alpha = 1, beta = 1) {
-  atil <- alpha+x
-  btil <- beta+n-x
-  out <-list(alpha_tilde = atil, beta_tilde = btil)
+# Set-up the beta binomial function
+beta_binomial <- function(n, x, alpha = 1, beta = 1) { 
+  atil <- alpha + x 
+  btil <- beta + n - x 
+  z <- n / (alpha + beta + n) 
+  out <- list(alpha_tilde = atil, beta_tilde = btil, credibility_factor = z) 
   return(out)
-  }
+}
 ```
-###Suggest (and justify) an appropriate prior distribution for the proportion of postgraduate students who “passed” and one for the proportion of undergraduate students who “passed”. [2 marks]
+
+
+### Suggest (and justify) an appropriate prior distribution for the proportion of postgraduate students who “passed” and one for the proportion of undergraduate students who “passed”. [2 marks]
 
 An appropriate prior distribution for the proportion of postgraduate students who "passed" and one for the proportion of undergraduate students who "passed" would be a beta distribution. 
 
@@ -366,97 +354,148 @@ A beta distribution is appropriate because:
   - The beta distribution is also flexible using shape parameters alpha and beta to represent a more accurate belief on our prior beliefs or available data. For example, when we modelled our data before it was slightly skewed.
   - It also ranges between 0 and 1, which is accurate for our analysis.
 
-###State the posterior distributions for the proportion of postgraduate students who “passed” and one for the proportion of undergraduate students who “passed”. [2 marks]
+### State the posterior distributions for the proportion of postgraduate students who “passed” and one for the proportion of undergraduate students who “passed”. [2 marks]
 
 The posterior distribution for the proportion of postgraduate students who "passed" and the proportion of undergraduate students who "passed" remains in the form of a beta distribution. 
 
 The formula $\text{Posterior} \propto \text{Likelihood} \times \text{Prior}$ means: The posterior is proportional to the likelihood multiplied by the prior. When updating our prior belief with the likelihood (which follows a binomial distribution), we obtain a new beta distribution for the posterior. The parameters of this posterior beta distribution are updated based on the data and prior information. 
 
-###Obtain 95% credible intervals for the proportion postgraduate students who “passed” and for the proportion of undergraduate students who “passed”. Comment on how these two intervals compare to each other. [4 marks]
+The beta distribution is parameterised by two shape parameters, alpha and beta, and after updating, these parameters will have new values that reflect our updated beliefs and knowledge about the proportions of students who "passed".
+
+
+### Obtain 95% credible intervals for the proportion postgraduate students who “passed” and for the proportion of undergraduate students who “passed”. Comment on how these two intervals compare to each other. [4 marks]
 ```{r}
-LUstar <- qbeta(c(0.025,0.975), alpha, beta)
-```
-Undergraduate Students:
-```{r}
-UN_n <- 145
-LU_UG <- UN_n * LUstar
+# PG Credible Interval
+alphaPG <- 1
+betaPG <- 1
+nPG <- 48
+LUstar_PG <- qbeta(c(0.025, 0.975), 42, 8)
+LU_PG <- nPG * LUstar_PG
+LU_PG
+
+
+# UG Credible Interval
+alphaUG <- 1
+betaUG <- 1
+nUG <- 145
+LUstar_UG <- qbeta(c(0.025, 0.975), 103, 44)
+LU_UG <- nUG * LUstar_UG
 LU_UG
 ```
-Postgraduate Students:
-```{r}
-PG_n <- 48
-LU_PG <- PG_n * LUstar
-LU_PG
-```
-Approximately 54 to 135 students from the undergraduate cohort have passed. Compared to Postgraduate, where approximately 18 to 45 students have passed.
 
-###Obtain and interpret the estimator that minimises the posterior expected squared error loss for the proportion of students who “passed” for a given cohort. Is this in a form that linearly combines a purely data-based estimator and some prior quantity? If so, quantify the contribution of the database estimator by deriving the credibility factor. Using the data, calculate the estimate and credibility factor for both cohorts of students. [8 marks]
+There is a 95% probability that the true number of postgraduate students who passed falls within the range of 34.92 to 44.49.
 
-**Undergraduate Students Posterior and Credibility Factor:**
+There is a 95% probability that the true number of undergraduate students who passed falls within the range of 90.55 to 111.90.
+
+### Obtain and interpret the estimator that minimises the posterior expected squared error loss for the proportion of students who “passed” for a given cohort. Is this in a form that linearly combines a purely data-based estimator and some prior quantity? If so, quantify the contribution of the databased estimator by deriving the credibility factor. Using the data, calculate the estimate and credibility factor for both cohorts of students. [8 marks]
 ```{r}
-xUG <- 102
-UG_Posterior <- beta_binomial(n = UN_n, x = xUG, alpha = alpha , beta = beta)
-UG_Posterior
-```
-**Undergraduate Estimator:**
-```{r}
-UG_Estimator <- UG_Posterior$alpha_tilde / UG_Posterior$beta_tilde
-UG_Estimator
-```
-**Postgraduate Students Posterior and Credibility Factor:**
-```{r}
+# PG STUDENTS
+## Posterior and Credibility Factor Calculation
 xPG <- 41
-PG_Posterior <- beta_binomial(n - PG_n, x = xPG, alpha = alpha, beta = beta)
-PG_Posterior
-```
-**Postgraduate Estimator:**
-```{r}
-PG_Estimator <- PG_Posterior$alpha_tilde / PG_Posterior$beta_tilde
-PG_Estimator
+Posterior_PG <- beta_binomial(n = nPG, x = xPG, alpha = alphaPG, beta = betaPG)
+Posterior_PG
+
+## Estimator that minimises the posterior expected squared loss for PG
+E_PG <- Posterior_PG$alpha_tilde / (Posterior_PG$alpha_tilde + Posterior_PG$beta_tilde)
+E_PG
+
+
+# UG STUDENTS
+## Posterior and Credibility Factor Calculation
+xUG <- 102
+Posterior_UG <- beta_binomial(n = nUG, x = xUG, alpha = alphaUG, beta = betaUG)
+Posterior_UG
+
+## Estimator that minimises the posterior expected squared loss for PG
+E_UG <- Posterior_UG$alpha_tilde / (Posterior_UG$alpha_tilde + Posterior_UG$beta_tilde)
+E_UG
 ```
 
-###State the estimator that minimises the posterior expected absolute error loss for the proportion of students who “passed” for a given cohort. Using the data, calculate the estimate for both cohorts of students. [4 marks]
-**Undergraduate Students:**
+
+### State the estimator that minimises the posterior expected absolute error loss for the proportion of students who “passed” for a given cohort. Using the data, calculate the estimate for both cohorts of students. [4 marks]
 ```{r}
-E_UG_AE <- qbeta(0.5, UG_Posterior$alpha_tilde, UG_Posterior$beta_tilde)
+# PG STUDENTS
+## Estimator that minimises the posterior expected absolute loss for PG
+E_PG_AE <- qbeta(0.5, Posterior_PG$alpha_tilde, Posterior_PG$beta_tilde)
+E_PG_AE  
+
+# UG STUDENTS
+## Estimator that minimises the posterior expected absolute loss for PG
+E_UG_AE <- qbeta(0.5, Posterior_UG$alpha_tilde, Posterior_UG$beta_tilde) 
 E_UG_AE
 ```
-**Postgraduate Students:**
-```{r}
-E_PG_AE <- qbeta(0.5, PG_Posterior$alpha_tilde, PG_Posterior$beta_tilde)
-E_PG_AE
-```
-###For each cohort of students, visualise the posterior distribution the proportion of students who “passed”. Discuss any interesting features. [3 marks]
+`r `
 
+### For each cohort of students, visualise the posterior distribution the proportion of students who “passed”. Discuss any interesting features. [3 marks]
 ```{r}
 #PG STUDENTS
 R <- 10000 
 set.seed(2023)
 
 # Simulate from the posterior of PG 
-samplePG <- rbeta(R, PG_Posterior$alpha_tilde, PG_Posterior$beta_tilde)
-sampleUG <- rbeta(R, UG_Posterior$alpha_tilde, PG_Posterior$beta_tilde)
+samplePG <- rbeta(R, Posterior_PG$alpha_tilde, Posterior_PG$beta_tilde)
+
+# Visualise the Posterior Dist. of PG
+ds_PG <- tibble(sample = samplePG) 
+p1 <- ds_PG %>% 
+      ggplot(aes(x = samplePG, y = ..density..)) +
+        geom_histogram(colour = "blue", fill = "blue", alpha = 0.4, bins = 100) +
+        geom_density( colour = "blue", fill = "gray", alpha = 0.4) + 
+        #geom_vline(xintercept = c(0.01, -0.01), colour = "red") + 
+        ggtitle("Simulated posterior pdf of PG Students") + 
+        xlab("Sample") +
+        theme_bw()
 
 
-ds_PG <- tibble(sample = samplePG)
-p1 <- ds_PG %>%
-  ggplot(aes(x = samplePG, y = ..density..)) +
-  geom_histogram(colour = "green", fill = "blue", alpha = 0.4, bins = 100) +
-  geom_density(colour = "blue", fill = "grey", alpha = 0.4) +
-  ggtitle("Posterior pdf of Postgraduate Students") +
-  xlab("Sample")
+#UG STUDENTS
+# Simulate from the posterior of UG 
+sampleUG <- rbeta(R, Posterior_UG$alpha_tilde, Posterior_UG$beta_tilde)
 
-ds_UG <- tibble(sample = sampleUG)
-p2 <- ds_UG <- ds_UG %>%
-  ggplot(aes(x = sampleUG, y = ..density..)) +
-  geom_histogram(colour = "green", fill = "blue", alpha = 0.4, bins = 100) +
-  geom_density(colour = "blue", fill = "grey", alpha = 0.4) +
-  ggtitle("Posterior pdf of Undergraduate Students") +
-  xlab("Sample")
+# Visualise the Posterior Dist. of UG
+ds_UG <- tibble(sample = sampleUG) 
+p2 <- ds_UG %>% 
+      ggplot(aes(x = sampleUG, y = ..density..)) +
+        geom_histogram(colour = "blue", fill = "blue", alpha = 0.4, bins = 100) +
+        geom_density( colour = "blue", fill = "gray", alpha = 0.4) + 
+        #geom_vline(xintercept = c(0.01, -0.01), colour = "red") + 
+        ggtitle("Simulated posterior pdf of UG Students") + 
+        xlab("Sample") +
+        theme_bw()
 
 grid.arrange(p1,p2, nrow = 2)
 ```
-Both distributions show a relatively normal distribution. However, the mean of the distributions for both the postgraduate students and undergraduate students differ from each other, with postgraduate's having a mean of approximately 0.3 and undergraduate's having a mean of approximately 0.50.
 
-###The lecturer wishes to do this again next semester. What priors do you suggest that she use? Explain your reasoning. [2 marks]
-When choosing a new prior for the next semester, it is recomended that the lecturer takes into consideration her previous prior and the their respective liklihoods. 
+
+
+### The lecturer wishes to do this again next semester. What priors do you suggest that she use? Explain your reasoning. [2 marks]
+Uniform dist. Using posterior as prior in next year.
+
+
+The lecturer wants to analyse the difference in proportions of “passing” for the two cohorts.
+### Simulate the posterior distribution of the difference in the proportion of postgraduate students who “passed” and the proportion of undergraduate students who “passed”. [4 marks]
+```{r}
+# Difference
+sample_diff <- samplePG - sampleUG
+diff_15 <- abs(sample_diff) <= 0.15
+
+# Visualise the difference
+ds_diff <- tibble(delta = sample_diff)
+ds_diff %>% 
+      ggplot(aes(x = delta, y = ..density..)) +
+        geom_histogram(colour = "blue", fill = "blue", alpha = 0.4, bins = 100) +
+        geom_density( colour = "blue", fill = "gray", alpha = 0.4) + 
+        #geom_vline(xintercept = c(0.01, -0.01), colour = "red") + 
+        ggtitle(expression(paste("Simulated posterior pdf of ", Delta))) + 
+        xlab(expression(Delta)) +
+        theme_bw()
+```
+
+
+
+### Give the lecturer an indication of the probability that the difference in the grades of the 2 cohorts is within 0.15. Be sure to provide a visualisation of the posterior to support your indication. [4 marks]
+```{r}
+mean(diff_15)
+```
+
+
+
