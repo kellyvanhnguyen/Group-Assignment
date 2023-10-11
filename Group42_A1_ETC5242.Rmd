@@ -320,7 +320,7 @@ Rxobs_tbl %>%
 ### What is the result of this test? (Be sure to properly define the null and alternative hypothesis and discuss the result of the test).
 In this case, we are interested in finding if PG students are actually better than UG students based on the quiz that they have taken. In doing so, we are going to perform upper one-sided hypothesis test, with $H_0$ and $H_1$ are:
 $$H_0: p_{P}-p_{U} = 0 \quad \mbox{vs.} \quad H_1: p_{P}-p_{U} > 0,$$
-where ${p}_{P}$ and ${p}_{U}$ denote the population proportions of Post-Graduate and Under-Graduate students passing the quiz, respectively. 
+where ${p}_{P}$ and ${p}_{U}$ denote the population proportions of Post-Graduate and Under-Graduate students passing the quiz, respectively. **H0 statement, H1 statement?**
 
 Based on the result that we have done previously, we have got p-value of the test is 0.0292. This suggest that based on the evidence we have, we reject the $H_0$. It means that it is likely there is a difference in the capability of PG students to pass the quiz compare to UG students, with PG students are better. To support this, we can see visually from the plot, our observed difference (the red line) is not likely to have come from a distribution which assumes that there are no difference between PG students and UG students, since it is far from 0.
 
@@ -365,15 +365,20 @@ The beta distribution is parameterised by two shape parameters, alpha and beta, 
 ### Obtain 95% credible intervals for the proportion postgraduate students who “passed” and for the proportion of undergraduate students who “passed”. Comment on how these two intervals compare to each other. [4 marks]
 ```{r}
 # PG Credible Interval
+alphaPG <- 1
+betaPG <- 1
 nPG <- 48
-LUstar <- qbeta(c(0.025, 0.975), alpha, beta)
-LU_PG <- nPG * LUstar
+LUstar_PG <- qbeta(c(0.025, 0.975), 42, 8)
+LU_PG <- nPG * LUstar_PG
 LU_PG
 
 
 # UG Credible Interval
+alphaUG <- 1
+betaUG <- 1
 nUG <- 145
-LU_UG <- nUG * LUstar
+LUstar_UG <- qbeta(c(0.025, 0.975), 103, 44)
+LU_UG <- nUG * LUstar_UG
 LU_UG
 ```
 
@@ -386,24 +391,22 @@ There is a 95% probability that the true number of undergraduate students who pa
 # PG STUDENTS
 ## Posterior and Credibility Factor Calculation
 xPG <- 41
-Posterior_PG <- beta_binomial(n = nPG, x = xPG, alpha = alpha, beta = beta)
+Posterior_PG <- beta_binomial(n = nPG, x = xPG, alpha = alphaPG, beta = betaPG)
 Posterior_PG
 
 ## Estimator that minimises the posterior expected squared loss for PG
-E_PG <- Posterior_PG$alpha_tilde / Posterior_PG$beta_tilde
+E_PG <- Posterior_PG$alpha_tilde / (Posterior_PG$alpha_tilde + Posterior_PG$beta_tilde)
 E_PG
-
-
 
 
 # UG STUDENTS
 ## Posterior and Credibility Factor Calculation
 xUG <- 102
-Posterior_UG <- beta_binomial(n = nUG, x = xUG, alpha = alpha, beta = beta)
+Posterior_UG <- beta_binomial(n = nUG, x = xUG, alpha = alphaUG, beta = betaUG)
 Posterior_UG
 
 ## Estimator that minimises the posterior expected squared loss for PG
-E_UG <- Posterior_UG$alpha_tilde / Posterior_UG$beta_tilde
+E_UG <- Posterior_UG$alpha_tilde / (Posterior_UG$alpha_tilde + Posterior_UG$beta_tilde)
 E_UG
 ```
 
