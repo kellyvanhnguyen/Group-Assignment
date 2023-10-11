@@ -268,9 +268,8 @@ grades_s4 <- grades_s3 %>%
               arrange(desc(row_number()))
 
 grades_s4 %>% 
-  kable() %>% 
+  kable(caption = "Proportion of Students who Passed or Failed") %>% 
   kable_styling()
-              
 ```
 As can be seen from the table above, there are more Under-Graduate (UG) students who enroll in the unit with the total of 145 students, compare to Post-Graduate (PG) students with the total of 48 students. However, when discussing about the "Pass" rate, PG students score higher rate with 0.854, while UG students score 0.703, this is a difference of 0.151. In overall, this means, out of 48 PG students, 41 students are passed the quiz, while 7 students are failed, on the other hand, out of 145 UG students, 102 students are passed the unit, while 43 students are failed.
 
