@@ -291,13 +291,13 @@ n <- nrow(grades)
 T3grades <- grades %>%
   select(Cohort, Result)
 
-xobs <- grades3$Prop[grades3$Cohort=='PG'] - grades3$Prop[grades3$Cohort=='UG']
+xobs <-  grades4$Prop[grades4$Cohort=='PG'] - grades4$Prop[grades4$Cohort=='UG']
 
 R <- 5000
 
 Rxobs <- array(dim = R)
 
-set.seed(2020.3)
+set.seed(10)
 
 RGrades <- T3grades
 
@@ -310,7 +310,7 @@ for (r in 1:R) {
     tally() %>%
     ungroup() %>% 
     pivot_wider(names_from = Result, values_from = n) %>%
-    mutate(total = `Fail` + Pass) %>% 
+    mutate(total = Fail + Pass) %>% 
     mutate(prop = round(Pass/total, digits=3))
  
   Rxobs[r] <- RGDSS3$prop[grades3$Cohort =='PG'] - RGDSS3$prop[grades3$Cohort =='UG']
@@ -335,11 +335,11 @@ The Null Hypothesis (H0): There is no difference between the grade rates of the 
 
 The Alternative Hypothesis (HA): The is evidence present that shows that there is a difference between the grade rates of the undergraduate and the postgraduate students. 
 
-The P-value is equal to : 0.298
+The P-value is equal to : `r pval`
 
 The plot represents a sampling distribution of proportion differences generated under the assumption that H0 is true (i.e. that postgraduate students perform better than undergraduate students). The red line shows the proportion difference that we observed from our sample.
 
-Based on the plot and the p-value, we can say with 95% confidence that there is not enough evidence to reject the null hypothesis (H0), thus, it can be concluded that there is no difference between the grade rates of the postgraduate and the undergraduate students.
+Based on the plot and the p-value, we can say with 95% confidence that there is evidence to reject the null hypothesis (H0), thus, it can be concluded that there is no difference between the grade rates of the postgraduate and the undergraduate students.
 
 Based on the plot and the p-value, we can say with 99% confidence that there is not enough evidence to reject the null hypothesis (H0), thus, it can be concluded that there is no difference between the grade rates of the postgraduate and the undergraduate students.
 
@@ -349,3 +349,114 @@ P-value's are based and influenced on various factors such as the chosen alpha (
 
 
 ## Task 3 - Bayesian Analysis [33 marks]
+```{r}
+beta_binomial <-function(n, x, alpha = 1, beta = 1) {
+  atil <- alpha+x
+  btil <- beta+n-x
+  out <-list(alpha_tilde = atil, beta_tilde = btil)
+  return(out)
+  }
+```
+###Suggest (and justify) an appropriate prior distribution for the proportion of postgraduate students who “passed” and one for the proportion of undergraduate students who “passed”. [2 marks]
+
+An appropriate prior distribution for the proportion of postgraduate students who "passed" and one for the proportion of undergraduate students who "passed" would be a beta distribution. 
+
+A beta distribution is appropriate because: 
+  - Beta distributions are conjugate to the binomial distribution, which can model our binary outcomes of pass and fail.
+  - The beta distribution is also flexible using shape parameters alpha and beta to represent a more accurate belief on our prior beliefs or available data. For example, when we modelled our data before it was slightly skewed.
+  - It also ranges between 0 and 1, which is accurate for our analysis.
+
+###State the posterior distributions for the proportion of postgraduate students who “passed” and one for the proportion of undergraduate students who “passed”. [2 marks]
+
+The posterior distribution for the proportion of postgraduate students who "passed" and the proportion of undergraduate students who "passed" remains in the form of a beta distribution. 
+
+The formula $\text{Posterior} \propto \text{Likelihood} \times \text{Prior}$ means: The posterior is proportional to the likelihood multiplied by the prior. When updating our prior belief with the likelihood (which follows a binomial distribution), we obtain a new beta distribution for the posterior. The parameters of this posterior beta distribution are updated based on the data and prior information. 
+
+###Obtain 95% credible intervals for the proportion postgraduate students who “passed” and for the proportion of undergraduate students who “passed”. Comment on how these two intervals compare to each other. [4 marks]
+```{r}
+LUstar <- qbeta(c(0.025,0.975), alpha, beta)
+```
+Undergraduate Students:
+```{r}
+UN_n <- 145
+LU_UG <- UN_n * LUstar
+LU_UG
+```
+Postgraduate Students:
+```{r}
+PG_n <- 48
+LU_PG <- PG_n * LUstar
+LU_PG
+```
+Approximately 54 to 135 students from the undergraduate cohort have passed. Compared to Postgraduate, where approximately 18 to 45 students have passed.
+
+###Obtain and interpret the estimator that minimises the posterior expected squared error loss for the proportion of students who “passed” for a given cohort. Is this in a form that linearly combines a purely data-based estimator and some prior quantity? If so, quantify the contribution of the database estimator by deriving the credibility factor. Using the data, calculate the estimate and credibility factor for both cohorts of students. [8 marks]
+
+**Undergraduate Students Posterior and Credibility Factor:**
+```{r}
+xUG <- 102
+UG_Posterior <- beta_binomial(n = UN_n, x = xUG, alpha = alpha , beta = beta)
+UG_Posterior
+```
+**Undergraduate Estimator:**
+```{r}
+UG_Estimator <- UG_Posterior$alpha_tilde / UG_Posterior$beta_tilde
+UG_Estimator
+```
+**Postgraduate Students Posterior and Credibility Factor:**
+```{r}
+xPG <- 41
+PG_Posterior <- beta_binomial(n - PG_n, x = xPG, alpha = alpha, beta = beta)
+PG_Posterior
+```
+**Postgraduate Estimator:**
+```{r}
+PG_Estimator <- PG_Posterior$alpha_tilde / PG_Posterior$beta_tilde
+PG_Estimator
+```
+
+###State the estimator that minimises the posterior expected absolute error loss for the proportion of students who “passed” for a given cohort. Using the data, calculate the estimate for both cohorts of students. [4 marks]
+**Undergraduate Students:**
+```{r}
+E_UG_AE <- qbeta(0.5, UG_Posterior$alpha_tilde, UG_Posterior$beta_tilde)
+E_UG_AE
+```
+**Postgraduate Students:**
+```{r}
+E_PG_AE <- qbeta(0.5, PG_Posterior$alpha_tilde, PG_Posterior$beta_tilde)
+E_PG_AE
+```
+###For each cohort of students, visualise the posterior distribution the proportion of students who “passed”. Discuss any interesting features. [3 marks]
+
+```{r}
+#PG STUDENTS
+R <- 10000 
+set.seed(2023)
+
+# Simulate from the posterior of PG 
+samplePG <- rbeta(R, PG_Posterior$alpha_tilde, PG_Posterior$beta_tilde)
+sampleUG <- rbeta(R, UG_Posterior$alpha_tilde, PG_Posterior$beta_tilde)
+
+
+ds_PG <- tibble(sample = samplePG)
+p1 <- ds_PG %>%
+  ggplot(aes(x = samplePG, y = ..density..)) +
+  geom_histogram(colour = "green", fill = "blue", alpha = 0.4, bins = 100) +
+  geom_density(colour = "blue", fill = "grey", alpha = 0.4) +
+  ggtitle("Posterior pdf of Postgraduate Students") +
+  xlab("Sample")
+
+ds_UG <- tibble(sample = sampleUG)
+p2 <- ds_UG <- ds_UG %>%
+  ggplot(aes(x = sampleUG, y = ..density..)) +
+  geom_histogram(colour = "green", fill = "blue", alpha = 0.4, bins = 100) +
+  geom_density(colour = "blue", fill = "grey", alpha = 0.4) +
+  ggtitle("Posterior pdf of Undergraduate Students") +
+  xlab("Sample")
+
+grid.arrange(p1,p2, nrow = 2)
+```
+Both distributions show a relatively normal distribution. However, the mean of the distributions for both the postgraduate students and undergraduate students differ from each other, with postgraduate's having a mean of approximately 0.3 and undergraduate's having a mean of approximately 0.50.
+
+###The lecturer wishes to do this again next semester. What priors do you suggest that she use? Explain your reasoning. [2 marks]
+When choosing a new prior for the next semester, it is recomended that the lecturer takes into consideration her previous prior and the their respective liklihoods. 
