@@ -1,7 +1,7 @@
 ---
 title: "ETC5242 Assignment 1"
 subtitle: "Group 42"
-author: "Khuyen Nguyen: kngu0086@student.monash.edu, Evan Ginting: 33477558, Rachitha Werake: 33519048"
+author: "Khuyen Nguyen: 33533113, Evan Ginting: 33477558, Rachitha Werake: 33519048"
 output: pdf_document
 ---
 
@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r loading-data}
+```{r loading-data, echo=FALSE}
 library(broom)
 library(gridExtra)
 library(kableExtra)
@@ -41,21 +41,19 @@ grades %>%
   ggplot(aes(x = Total, y = after_stat(density))) +
   geom_histogram(colour = "blue", fill = "blue", alpha = 0.2, bins = 30) +
   geom_density(colour = "blue", fill = "blue", alpha = 0.2) +
-  ggtitle("Distribution of Total Score (n = 193)") +
+  ggtitle("Distribution of Total Scores (n = 193)") +
   xlab("Total Score") +
   theme_bw()
 ```
-- As can be seen from the plot, the distribution of total score is left-skewed. Most of the score are recorded within the higher range of the scale (>= 0.6), with a long tail towards the lower range (< 0.6).
-- A normal distribution, being symmetric, may not be able to capture this skewness perfectly. Hence, it is probably not a best idea to use normal distribution to fit sample score for this case. 
+- As can be seen from the plot, the distribution of total scores is left-skewed. Most of the scores are recorded within the higher range of the scale (>= 0.6), with a long tail towards the lower range (< 0.6).
+- A normal distribution, being symmetric, may not be able to capture this skewness perfectly. Hence, it is probably not the best idea to use a normal distribution to fit sample scores for this case. 
 
 
 ### An alternative is the beta distribution. Explain why this may be a valid alternative in this case. [2 marks]
-The beta distribution is also a viable option. To use it, we'll need to determine the parameter estimates $\alpha$ and $\beta$. Observing that the distribution shows a left-skewed, the beta distribution may be well-suited for this situation. Additionally, since the test scores range from 0 to 1, the beta distribution's domain aligns with the data range.
+The beta distribution is also a viable option. To use it, we'll need to determine the parameter estimates $\alpha$ and $\beta$. Observing that the distribution shows a left-skew, the beta distribution may be well-suited for this situation. Additionally, since the test scores range from 0 to 1, the beta distribution's domain aligns with the data range.
 
 
 ### Use Maximum Likelihood to fit both a Normal and Beta distribution to the grades. Use a Bootstrap QQplot to assess the fit of each. Which distribution do you recommend? Be sure to briefly explain your reasoning. [8 marks]
-
-#### Normal Distribution
 
 **Normal Distribution Fit**
 ```{r}
@@ -78,7 +76,6 @@ p <- ggplot(df, aes(sample = x)) +
   theme_bw() + 
   ggtitle("QQ plot of Total Scores according to a Normal Distribution") +
   xlab("Theoretical") + ylab("Total Score")
-p 
 ```
 
 **Assessing the fitness of normal distribution using Bootstrap QQplot**
@@ -106,8 +103,6 @@ p <- p + stat_qq(aes(sample = x), distribution = qnorm, dparams = params) +
 p
 ```
 
-#### Beta Distribution
-
 **Beta Distribution Fit**
 ```{r, warning = FALSE}
 set.seed(10)
@@ -119,11 +114,7 @@ set.seed(10)
 dt <- tibble(id = 1:n, x = x)
 
 betadist_fit <- fitdistr(x, "beta", start = list(shape1 = 1, shape2 = 1)) 
-betadist_fit
-```
-
-```{r}
-betadist_fit %>% tidy() ##CHECK
+betadist_fit %>% tidy()
 ```
 
 **QQplot Beta Distribution**
@@ -137,8 +128,8 @@ p_betadist <- ggplot(dt, aes(sample = x)) +
   theme_bw() + 
   ggtitle("QQ plot of Total Scores according to a Beta Distribution") +
   xlab("Theoretical") + ylab("Sample")
-p_betadist
 ```
+
 **Assessing the fitness of beta distribution using Bootstrap QQplot**
 ```{r qqbeta_dist_boot, out.width = "100%", fig.align = "center", fig.width = 6, fig.height = 4, eval = TRUE, echo = TRUE, warning = FALSE}
 set.seed(10)
@@ -165,7 +156,7 @@ p_betadist
 ```
 
 #### Recommendation
-Based on the Bootstrap QQ plots, We would recommend using the Beta distribution. You can observe that the grey confidence intervals on the Beta distribution have fewer points deviating from the line compared to the Normal distribution. In the Normal distribution, points deviate at both the beginning and end of the line, whereas for the Beta distribution, the fit is only slightly off at the beginning.
+Based on the Bootstrap QQ plots, we would recommend using the Beta distribution. You can observe that the grey confidence intervals on the Beta distribution have fewer points deviating from the line compared to the Normal distribution. In the Normal distribution, points deviate at both the beginning and end of the line, whereas for the Beta distribution, the fit is only slightly off at the beginning.
 
 
 ### The lecturer is interested in trying the Beta distribution. Use your MLE’s to report the mean and the median of the grade distribution (recall that the mean is a function of the shape and rate parameters). Be sure to interpret these values. [4 marks]
@@ -356,12 +347,21 @@ beta_binomial <- function(n, x, alpha = 1, beta = 1) {
 
 
 ### Suggest (and justify) an appropriate prior distribution for the proportion of postgraduate students who “passed” and one for the proportion of undergraduate students who “passed”. [2 marks]
-Beta Binomial Distribution. 
 
+An appropriate prior distribution for the proportion of postgraduate students who "passed" and one for the proportion of undergraduate students who "passed" would be a beta distribution. 
+
+A beta distribution is appropriate because: 
+  - Beta distributions are conjugate to the binomial distribution, which can model our binary outcomes of pass and fail.
+  - The beta distribution is also flexible using shape parameters alpha and beta to represent a more accurate belief on our prior beliefs or available data. For example, when we modelled our data before it was slightly skewed.
+  - It also ranges between 0 and 1, which is accurate for our analysis.
 
 ### State the posterior distributions for the proportion of postgraduate students who “passed” and one for the proportion of undergraduate students who “passed”. [2 marks]
 
+The posterior distribution for the proportion of postgraduate students who "passed" and the proportion of undergraduate students who "passed" remains in the form of a beta distribution. 
 
+The formula $\text{Posterior} \propto \text{Likelihood} \times \text{Prior}$ means: The posterior is proportional to the likelihood multiplied by the prior. When updating our prior belief with the likelihood (which follows a binomial distribution), we obtain a new beta distribution for the posterior. The parameters of this posterior beta distribution are updated based on the data and prior information. 
+
+The beta distribution is parameterised by two shape parameters, alpha and beta, and after updating, these parameters will have new values that reflect our updated beliefs and knowledge about the proportions of students who "passed".
 
 ### Obtain 95% credible intervals for the proportion postgraduate students who “passed” and for the proportion of undergraduate students who “passed”. Comment on how these two intervals compare to each other. [4 marks]
 ```{r}
@@ -376,9 +376,11 @@ LU_PG
 nUG <- 145
 LU_UG <- nUG * LUstar
 LU_UG
-
 ```
 
+There is a 95% probability that the true number of postgraduate students who passed falls within the range of 17.75 to 44.79.
+
+There is a 95% probability that the true number of undergraduate students who passed falls within the range of 53.62 to 135.30.
 
 ### Obtain and interpret the estimator that minimises the posterior expected squared error loss for the proportion of students who “passed” for a given cohort. Is this in a form that linearly combines a purely data-based estimator and some prior quantity? If so, quantify the contribution of the databased estimator by deriving the credibility factor. Using the data, calculate the estimate and credibility factor for both cohorts of students. [8 marks]
 ```{r}
