@@ -319,7 +319,7 @@ Rxobs_tbl %>%
 
 ### What is the result of this test? (Be sure to properly define the null and alternative hypothesis and discuss the result of the test).
 In this case, we are interested in finding if PG students are actually better than UG students based on the quiz that they have taken. In doing so, we are going to perform upper one-sided hypothesis test, with $H_0$ and $H_1$ are:
-$$H_0: p_{P}-p_{U} = 0 \quad \mbox{vs.} \quad H_1: p_{P}-p_{U} > 0,$$
+$$H_0: p_{PG}-p_{UG} = 0 \quad \mbox{vs.} \quad H_1: p_{PG}-p_{UG} > 0,$$
 where ${p}_{P}$ and ${p}_{U}$ denote the population proportions of Post-Graduate and Under-Graduate students passing the quiz, respectively. **H0 statement, H1 statement?**
 
 Based on the result that we have done previously, we have got p-value of the test is 0.0292. This suggest that based on the evidence we have, we reject the $H_0$. It means that it is likely there is a difference in the capability of PG students to pass the quiz compare to UG students, with PG students are better. To support this, we can see visually from the plot, our observed difference (the red line) is not likely to have come from a distribution which assumes that there are no difference between PG students and UG students, since it is far from 0.
@@ -362,6 +362,7 @@ The formula $\text{Posterior} \propto \text{Likelihood} \times \text{Prior}$ mea
 
 The beta distribution is parameterised by two shape parameters, alpha and beta, and after updating, these parameters will have new values that reflect our updated beliefs and knowledge about the proportions of students who "passed".
 
+
 ### Obtain 95% credible intervals for the proportion postgraduate students who “passed” and for the proportion of undergraduate students who “passed”. Comment on how these two intervals compare to each other. [4 marks]
 ```{r}
 # PG Credible Interval
@@ -382,9 +383,9 @@ LU_UG <- nUG * LUstar_UG
 LU_UG
 ```
 
-There is a 95% probability that the true number of postgraduate students who passed falls within the range of 17.75 to 44.79.
+There is a 95% probability that the true number of postgraduate students who passed falls within the range of 34.92 to 44.49.
 
-There is a 95% probability that the true number of undergraduate students who passed falls within the range of 53.62 to 135.30.
+There is a 95% probability that the true number of undergraduate students who passed falls within the range of 90.55 to 111.90.
 
 ### Obtain and interpret the estimator that minimises the posterior expected squared error loss for the proportion of students who “passed” for a given cohort. Is this in a form that linearly combines a purely data-based estimator and some prior quantity? If so, quantify the contribution of the databased estimator by deriving the credibility factor. Using the data, calculate the estimate and credibility factor for both cohorts of students. [8 marks]
 ```{r}
@@ -423,7 +424,7 @@ E_PG_AE
 E_UG_AE <- qbeta(0.5, Posterior_UG$alpha_tilde, Posterior_UG$beta_tilde) 
 E_UG_AE
 ```
-
+`r `
 
 ### For each cohort of students, visualise the posterior distribution the proportion of students who “passed”. Discuss any interesting features. [3 marks]
 ```{r}
@@ -439,7 +440,7 @@ ds_PG <- tibble(sample = samplePG)
 p1 <- ds_PG %>% 
       ggplot(aes(x = samplePG, y = ..density..)) +
         geom_histogram(colour = "blue", fill = "blue", alpha = 0.4, bins = 100) +
-        geom_density( colour = "blue", fill = "blue", alpha = 0.4) + 
+        geom_density( colour = "blue", fill = "gray", alpha = 0.4) + 
         #geom_vline(xintercept = c(0.01, -0.01), colour = "red") + 
         ggtitle("Simulated posterior pdf of PG Students") + 
         xlab("Sample") +
@@ -455,7 +456,7 @@ ds_UG <- tibble(sample = sampleUG)
 p2 <- ds_UG %>% 
       ggplot(aes(x = sampleUG, y = ..density..)) +
         geom_histogram(colour = "blue", fill = "blue", alpha = 0.4, bins = 100) +
-        geom_density( colour = "blue", fill = "blue", alpha = 0.4) + 
+        geom_density( colour = "blue", fill = "gray", alpha = 0.4) + 
         #geom_vline(xintercept = c(0.01, -0.01), colour = "red") + 
         ggtitle("Simulated posterior pdf of UG Students") + 
         xlab("Sample") +
@@ -467,7 +468,7 @@ grid.arrange(p1,p2, nrow = 2)
 
 
 ### The lecturer wishes to do this again next semester. What priors do you suggest that she use? Explain your reasoning. [2 marks]
-
+Uniform dist. Using posterior as prior in next year.
 
 
 The lecturer wants to analyse the difference in proportions of “passing” for the two cohorts.
@@ -482,7 +483,7 @@ ds_diff <- tibble(delta = sample_diff)
 ds_diff %>% 
       ggplot(aes(x = delta, y = ..density..)) +
         geom_histogram(colour = "blue", fill = "blue", alpha = 0.4, bins = 100) +
-        geom_density( colour = "blue", fill = "blue", alpha = 0.4) + 
+        geom_density( colour = "blue", fill = "gray", alpha = 0.4) + 
         #geom_vline(xintercept = c(0.01, -0.01), colour = "red") + 
         ggtitle(expression(paste("Simulated posterior pdf of ", Delta))) + 
         xlab(expression(Delta)) +
