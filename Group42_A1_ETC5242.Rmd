@@ -241,9 +241,9 @@ failed <- pbeta(0.60, alpha, beta)
 hd <- 1 - pbeta(0.80, alpha, beta)
 ```
 
-- From the beta distribution, there are `r round(within_15_prct*100, 2)`% student that is within 15% of the average.
-- Assuming that "Pass" is above 60%, then the proportion of student that failed the quiz is `r round(failed*100,2)`%, which is `r floor(failed*193)` students out of 193.
-- Assuming that "HD" is above 80%, then the proportion of student that got HD is `r round(hd*100,2)`%, which is `r floor(hd*193)` students out of 193.
+- From the beta distribution, there are `r round(within_15_prct*100, 2)`% of students within 15% of the average.
+- Assuming that a "Pass" is above 60%, then the proportion of students that failed the quiz is `r round(failed*100,2)`%, which is `r floor(failed*193)` students out of 193.
+- Assuming that a "HD" is above 80%, then the proportion of students that got HD is `r round(hd*100,2)`%, which is `r floor(hd*193)` students out of 193.
 
 
 ### Overall, do you think that the quiz achieved the lecturer’s aims? [4 marks]
@@ -253,7 +253,6 @@ Overall, we would say that the quiz achieved the lecturer's aims. The average ma
 Additionally, 48.65% of students scored within 15% of the MLE mean of the grades, which suggests that the quiz was fair and that students were able to demonstrate their understanding of the material. 
 
 However, the benchmark of 60% could be considered quite high, as 25.83% of the class failed. This suggests that the quiz may have been too difficult for some students, and that the lecturer may want to reconsider the benchmark in the future.
-
 
 ## Task 2 - Are Postgrad students better? [30 marks]
 
