@@ -248,7 +248,11 @@ hd <- 1 - pbeta(0.80, alpha, beta)
 
 ### Overall, do you think that the quiz achieved the lecturer’s aims? [4 marks]
 
-Overall, we would say that the quiz achieved the lecturer's aims. The average mark fell around 70%, which is within the range that was expected for the lecturer. Additionally, 48.65% of students scored within 15% of the MLE mean of the grades, which suggests that the quiz was fair and that students were able to demonstrate their understanding of the material. However, the benchmark of 60% could be considered quite high, as 25.83% of the class failed. This suggests that the quiz may have been too difficult for some students, and that the lecturer may want to reconsider the benchmark in the future.
+Overall, we would say that the quiz achieved the lecturer's aims. The average mark fell around 70%, which is within the range that was expected for the lecturer. 
+
+Additionally, 48.65% of students scored within 15% of the MLE mean of the grades, which suggests that the quiz was fair and that students were able to demonstrate their understanding of the material. 
+
+However, the benchmark of 60% could be considered quite high, as 25.83% of the class failed. This suggests that the quiz may have been too difficult for some students, and that the lecturer may want to reconsider the benchmark in the future.
 
 
 ## Task 2 - Are Postgrad students better? [30 marks]
@@ -285,8 +289,11 @@ grades_s4 %>%
   kable(caption = "Proportion of Students who Passed or Failed") %>% 
   kable_styling()
 ```
-As can be seen from the table above, there are more Under-Graduate (UG) students who enroll in the unit with the total of 145 students, compare to Post-Graduate (PG) students with the total of 48 students. However, when discussing about the "Pass" rate, PG students score higher rate with 0.854, while UG students score 0.703, this is a difference of 0.151. In overall, this means, out of 48 PG students, 41 students are passed the quiz, while 7 students are failed, on the other hand, out of 145 UG students, 102 students are passed the unit, while 43 students are failed.
+As can be seen from the table above, there are more students enrolled in the undergraduate cohort (145 compared to 48), with a higher number of students passing and failing than in the postgraduate cohort (102 compared to 41). 
 
+However, there is a higher proportion of students who passed in the postgraduate cohort compared to the undergraduate cohort, with 85.4% passing compared to 70.3%. This is a difference of 0.151. 
+
+Overall this means that out of 48 PG students, 41 students passed, whilst 7 students failed. Out of 145 UG students, 102 students passed, whilst 43 students failed.
 
 ### Conduct a permutation test with 5000 replications. Plot the sampling distribution of your test. [4 marks]
 **Permutation Test**
@@ -483,10 +490,10 @@ E_UG_AE <- qbeta(0.5, Posterior_UG$alpha_tilde, Posterior_UG$beta_tilde)
 E_UG_AE
 ```
 
-In Bayes Theorem the absolute loss is the median of the posterior. Based of this, the estimator that minimises the expected absolute error loss within the posterior for the proportion of students who passed is:
+In Bayes' Theorem, the absolute loss is defined as the median of the posterior distribution. Based on this, the estimator that minimises the expected absolute error loss within the posterior distribution for the proportion of students who passed is as follows:
 
-**Postgraduate Students:** `r E_PG_AE`
-**Undergraduate Students:** ` r E_UG_AE`
+ - **Postgraduate students:** `r E_PG_AE`
+ - **Undergraduate students:** `r E_UG_AE`
 
 ### For each cohort of students, visualise the posterior distribution the proportion of students who “passed”. Discuss any interesting features. [3 marks]
 ```{r}
