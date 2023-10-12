@@ -449,6 +449,18 @@ E_UG <- Posterior_UG$alpha_tilde / (Posterior_UG$alpha_tilde + Posterior_UG$beta
 E_UG
 ```
 
+**Postgraduate Students:**
+Estimator: `r E_PG`
+The squared error loss measures the discrepancy between the parameter and the estimate.
+Based on the above estimate of the posterior expected squared loss, we can say that 98.6% of the proportion of the postgraduate students passed the test.
+
+Credibility Factor: `r Posterior_PG$credibility_factor`
+
+**Undergraduate Students:**
+Estimator: `r E_UG`
+Based on the above estimate of the posterior expected squared loss, we can say that 70% of the proportion of the postgraduate students passed the test.
+
+Credibility Factor: `r Posterior_UG$credibility_factor`
 
 ### State the estimator that minimises the posterior expected absolute error loss for the proportion of students who “passed” for a given cohort. Using the data, calculate the estimate for both cohorts of students. [4 marks]
 ```{r}
@@ -463,6 +475,10 @@ E_UG_AE <- qbeta(0.5, Posterior_UG$alpha_tilde, Posterior_UG$beta_tilde)
 E_UG_AE
 ```
 
+In Bayes Theorem the absolute loss is the median of the posterior. Based of this, the estimator that minimises the expected absolute error loss within the posterior for the proportion of students who passed is:
+
+**Postgraduate Students:** `r E_PG_AE`
+**Undergraduate Students:** ` r E_UG_AE`
 
 ### For each cohort of students, visualise the posterior distribution the proportion of students who “passed”. Discuss any interesting features. [3 marks]
 ```{r}
@@ -503,6 +519,7 @@ p2 <- ds_UG %>%
 grid.arrange(p1,p2, nrow = 2)
 ```
 
+Upon analysing the posterior distribution of the proportion of students who passed the quiz, there are few interesting features that are presented. In the case of the undergraduate students, the posterior distribution shows are relatively normal distribution. However, for the case of the postgraduate students who passed the quiz, their posterior distribution shows are slightly right skewed distribution. 
 
 
 ### The lecturer wishes to do this again next semester. What priors do you suggest that she use? Explain your reasoning. [2 marks]
