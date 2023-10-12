@@ -538,9 +538,9 @@ Upon analysing the posterior distribution of the proportion of students who pass
 
 ### The lecturer wishes to do this again next semester. What priors do you suggest that she use? Explain your reasoning. [2 marks]
 
-For the next semester, we recommend using the posterior distribution from the previous semester as the prior, specifically a beta distribution. This approach adheres to Bayesian principles, incorporating the latest data.
+If the lecturer wishes to do this again next semester, and she intends to use the same or a similar quiz, we recommend using the posterior distribution from this semester as the prior. In our scenario, this prior was a beta distribution. This approach adheres to Bayesian principles by incorporating the latest data (scores) to update beliefs (the distribution of scores).
 
-Additionally, utilising a uniform distribution as the prior will ensure an unbiased perspective each year.
+We would only utilise a uniform distribution as the prior in a new setting, such as a different form of testing (e.g., an assignment). In this case, we can assume an unbiased perspective due to the lack of prior information. This can be a valid alternative when the prior data is not relevant.
 
 ### Simulate the posterior distribution of the difference in the proportion of postgraduate students who “passed” and the proportion of undergraduate students who “passed”. [4 marks]
 ```{r}
