@@ -42,7 +42,8 @@ grades %>%
   geom_histogram(colour = "blue", fill = "blue", alpha = 0.2, bins = 30) +
   geom_density(colour = "blue", fill = "blue", alpha = 0.2) +
   ggtitle("Distribution of Total Scores (n = 193)") +
-  xlab("Total Score") +
+  xlab("Total Scores") +
+  ylab("Density") +
   theme_bw()
 ```
 - As can be seen from the plot, the distribution of total scores is left-skewed. Most of the scores are recorded within the higher range of the scale (>= 0.6), with a long tail towards the lower range (< 0.6).
@@ -108,12 +109,6 @@ p
 
 **Beta Distribution Fit**
 ```{r, warning = FALSE}
-set.seed(10)
-
-#alpha.true <- 0.6 
-#beta.true <- 0.4 
-
-#x_beta <- rbeta(n, shape1 = alpha.true, shape2 = beta.true)
 dt <- tibble(id = 1:n, x = x)
 
 betadist_fit <- fitdistr(x, "beta", start = list(shape1 = 1, shape2 = 1)) 
@@ -222,6 +217,7 @@ boot.LCI.mean
 p_MLEboot.mean <- bootplot.f(MLE.x_mean[], bins = 100) +
   ggtitle("Sampling distribution for MLE of mean of beta distribution of grades") +
   xlab("MLE of mean") +
+  ylab("Density") +
   theme_bw()
 
 p_MLEboot.mean
@@ -251,7 +247,8 @@ hd <- 1 - pbeta(0.80, alpha, beta)
 
 
 ### Overall, do you think that the quiz achieved the lecturer’s aims? [4 marks]
-Overall, We would say that the quiz achieved the lecturer's aims. The average mark fell around 70%, which is within the range that was expected for the lecturer. Additionally, 48.65% of students scored within 15% of the MLE mean of the grades, which suggests that the quiz was fair and that students were able to demonstrate their understanding of the material. However, the benchmark of 60% could be considered quite high, as 25.83% of the class failed. This suggests that the quiz may have been too difficult for some students, and that the lecturer may want to reconsider the benchmark in the future.
+
+Overall, we would say that the quiz achieved the lecturer's aims. The average mark fell around 70%, which is within the range that was expected for the lecturer. Additionally, 48.65% of students scored within 15% of the MLE mean of the grades, which suggests that the quiz was fair and that students were able to demonstrate their understanding of the material. However, the benchmark of 60% could be considered quite high, as 25.83% of the class failed. This suggests that the quiz may have been too difficult for some students, and that the lecturer may want to reconsider the benchmark in the future.
 
 
 ## Task 2 - Are Postgrad students better? [30 marks]
@@ -352,12 +349,19 @@ The p-value of the test is 0.0292, which is less than the chosen significance le
 To further support this conclusion, we can visually observe from the plot that the observed difference (represented by the red line) is far from 0. This suggests that it is unlikely to have arisen from a distribution that assumes no difference between PG and UG students.
 
 ### The lecturer may be confused as to why such a large difference in proportions does not have a p-value of almost 0. Explain why this may occur. [4 marks]
-The reason why this happens may significantly because of the sample size. As we know, the PG sample size is 48 while UG sample size is 145, they almost have hundred of different sample size. Since the p-value is influenced by the size of the sample, if we have small sample size, we have less data points to estimate population parameters accurately, which lead to a larger standard error (a measure of the variability of the sample). In turn, providing a lower test statistic. A lower test statistic contributes to a smaller p-value. 
+
+A large difference in proportions may not necessarily result in a $p$-value close to 0 due to factors such as the sample size and the observed difference, as well as the alpha level.
+
+The PG sample size is 48, whilst the UG sample size is 145. There is almost a hundred observations of difference in the sample size. Since the p-value is influenced by the size of the sample, if we have small sample size, we have less data points to estimate population parameters accurately, which lead to a larger standard error (a measure of the variability of the sample). In turn, providing a lower test statistic. A lower test statistic contributes to a smaller p-value. 
+
+A larger sample size may yield to smaller p-values when there is a substantial difference between proportions exists. This is because a larger sample provides more statistical power to detect differences accurately.
+
+The alpha level chosen will also affect the p-value. In this case, using an alpha level of 95% means there was a 5% chance that we are incorrect when we rejected the null hypothesis.
+
+A lower alpha level implies a stricter criterion for significance, resulting in smaller p-values if the observed difference is substantial. Conversely, a higher alpha level increases the likelihood of a Type I error, where you incorrectly reject the null hypothesis.
 
 
 ## Task 3 - Bayesian Analysis [33 marks]
-
-The lecturer is curious about using Bayesian analysis to compare the proportion of postgraduate students who “passed” with undergraduate students who “passed”. The lecturer has no real opinion as to what the distribution of marks for each cohort would be.
 
 ```{r}
 # Set-up the beta binomial function
@@ -394,21 +398,20 @@ The posterior distribution for the proportion of postgraduate students who "pass
 
 The formula $\text{Posterior} \propto \text{Likelihood} \times \text{Prior}$ means: The posterior is proportional to the likelihood multiplied by the prior. When updating our prior belief with the likelihood (which follows a binomial distribution), we obtain a new beta distribution for the posterior. The parameters of this posterior beta distribution are updated based on the data and prior information. 
 
-The beta distribution is parameterised by two shape parameters, alpha and beta, and after updating, these parameters will have new values that reflect our updated beliefs and knowledge about the proportions of students who "passed".
+The beta distribution is parameterised by two shape parameters, alpha and beta, and after updating, these parameters will have new values that reflect our updated beliefs and knowledge about the proportions of students who passed.
 
 ```{r}
-nPG <- 48 #student count
-nUG <- 145 #student count
-
 # PG Students
 alphaPG <- 1
 betaPG <- 1
+nPG <- 48 #student count
 xPG <- 41 #"Pass" count of PG students 
 Posterior_PG <- beta_binomial(n = nPG, x = xPG, alpha = alphaPG, beta = betaPG)
 
 # UG Students
 alphaUG <- 1
 betaUG <- 1
+nUG <- 145 #student count
 xUG <- 102 #"Pass" count
 Posterior_UG <- beta_binomial(n = nUG, x = xUG, alpha = alphaUG, beta = betaUG)
 ```
@@ -417,14 +420,12 @@ Posterior_UG <- beta_binomial(n = nUG, x = xUG, alpha = alphaUG, beta = betaUG)
 ### Obtain 95% credible intervals for the proportion postgraduate students who “passed” and for the proportion of undergraduate students who “passed”. Comment on how these two intervals compare to each other. [4 marks]
 ```{r}
 # PG Credible Interval
-nPG <- 48 #student count
 LUstar_PG <- qbeta(c(0.025, 0.975), Posterior_PG$alpha_tilde, Posterior_PG$beta_tilde)
 LU_PG <- nPG * LUstar_PG
 LU_PG
 
 
 # UG Credible Interval
-nUG <- 145 #student count
 LUstar_UG <- qbeta(c(0.025, 0.975), Posterior_UG$alpha_tilde, Posterior_UG$beta_tilde)
 LU_UG <- nUG * LUstar_UG
 LU_UG
@@ -438,7 +439,7 @@ There is a 95% probability that the true number of undergraduate students who pa
 ```{r}
 # PG STUDENTS
 ## Credibility Factor of PG Students
-### This had been calculated using beta binomial function to show Posterior Dist. of PG Students
+### This has been calculated using beta binomial function to show Posterior Dist. of PG Students
 Posterior_PG$credibility_factor
 
 ## Estimator that minimises the posterior expected squared loss for PG (Posterior Mean)
@@ -448,7 +449,7 @@ E_PG
 
 # UG STUDENTS
 ## Credibility Factor of UG Students
-### This had been calculated using beta binomial function to show Posterior Dist. of UG Students 
+### This has been calculated using beta binomial function to show Posterior Dist. of UG Students 
 Posterior_UG$credibility_factor
 
 ## Estimator that minimises the posterior expected squared loss for PG (Posterior Mean)
