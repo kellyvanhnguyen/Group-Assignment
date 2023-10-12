@@ -489,6 +489,7 @@ Uniform dist. Using posterior as prior in next year.
 ### Simulate the posterior distribution of the difference in the proportion of postgraduate students who “passed” and the proportion of undergraduate students who “passed”. [4 marks]
 ```{r}
 # Difference
+sample_diff <- samplePG - sampleUG
 Posterior_PG_meanvar <- beta_meanvar(Posterior_PG$alpha_tilde, Posterior_PG$beta_tilde) 
 Posterior_UG_meanvar <- beta_meanvar(Posterior_UG$alpha_tilde, Posterior_UG$beta_tilde) 
 delta_mean <- Posterior_PG_meanvar$mean - Posterior_UG_meanvar$mean 
