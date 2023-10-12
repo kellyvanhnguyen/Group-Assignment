@@ -342,6 +342,13 @@ beta_binomial <- function(n, x, alpha = 1, beta = 1) {
   out <- list(alpha_tilde = atil, beta_tilde = btil, credibility_factor = z) 
   return(out)
 }
+
+beta_meanvar <- function(alpha = 1, beta = 1) { 
+  mean <- alpha / (alpha + beta) 
+  var <- mean * beta / ((alpha + beta) * (alpha + beta + 1)) 
+  out <- list(mean = mean, var = var) 
+  return(out)
+}
 ```
 
 
@@ -361,24 +368,33 @@ The posterior distribution for the proportion of postgraduate students who "pass
 The formula $\text{Posterior} \propto \text{Likelihood} \times \text{Prior}$ means: The posterior is proportional to the likelihood multiplied by the prior. When updating our prior belief with the likelihood (which follows a binomial distribution), we obtain a new beta distribution for the posterior. The parameters of this posterior beta distribution are updated based on the data and prior information. 
 
 The beta distribution is parameterised by two shape parameters, alpha and beta, and after updating, these parameters will have new values that reflect our updated beliefs and knowledge about the proportions of students who "passed".
+```{r}
+# PG Students
+alphaPG <- 1
+betaPG <- 1
+xPG <- 41 #"Pass" count of PG students 
+Posterior_PG <- beta_binomial(n = nPG, x = xPG, alpha = alphaPG, beta = betaPG)
+
+# UG Students
+alphaUG <- 1
+betaUG <- 1
+xUG <- 102 #"Pass" count
+Posterior_UG <- beta_binomial(n = nUG, x = xUG, alpha = alphaUG, beta = betaUG)
+```
 
 
 ### Obtain 95% credible intervals for the proportion postgraduate students who “passed” and for the proportion of undergraduate students who “passed”. Comment on how these two intervals compare to each other. [4 marks]
 ```{r}
 # PG Credible Interval
-alphaPG <- 1
-betaPG <- 1
-nPG <- 48
-LUstar_PG <- qbeta(c(0.025, 0.975), 42, 8)
+nPG <- 48 #student count
+LUstar_PG <- qbeta(c(0.025, 0.975), Posterior_PG$alpha_tilde, Posterior_PG$beta_tilde)
 LU_PG <- nPG * LUstar_PG
 LU_PG
 
 
 # UG Credible Interval
-alphaUG <- 1
-betaUG <- 1
-nUG <- 145
-LUstar_UG <- qbeta(c(0.025, 0.975), 103, 44)
+nUG <- 145 #student count
+LUstar_UG <- qbeta(c(0.025, 0.975), Posterior_UG$alpha_tilde, Posterior_UG$beta_tilde)
 LU_UG <- nUG * LUstar_UG
 LU_UG
 ```
@@ -390,23 +406,21 @@ There is a 95% probability that the true number of undergraduate students who pa
 ### Obtain and interpret the estimator that minimises the posterior expected squared error loss for the proportion of students who “passed” for a given cohort. Is this in a form that linearly combines a purely data-based estimator and some prior quantity? If so, quantify the contribution of the databased estimator by deriving the credibility factor. Using the data, calculate the estimate and credibility factor for both cohorts of students. [8 marks]
 ```{r}
 # PG STUDENTS
-## Posterior and Credibility Factor Calculation
-xPG <- 41
-Posterior_PG <- beta_binomial(n = nPG, x = xPG, alpha = alphaPG, beta = betaPG)
-Posterior_PG
+## Credibility Factor of PG Students
+### This had been calculated using beta binomial function to show Posterior Dist. of PG Students
+Posterior_PG$credibility_factor
 
-## Estimator that minimises the posterior expected squared loss for PG
+## Estimator that minimises the posterior expected squared loss for PG (Posterior Mean)
 E_PG <- Posterior_PG$alpha_tilde / (Posterior_PG$alpha_tilde + Posterior_PG$beta_tilde)
 E_PG
 
 
 # UG STUDENTS
-## Posterior and Credibility Factor Calculation
-xUG <- 102
-Posterior_UG <- beta_binomial(n = nUG, x = xUG, alpha = alphaUG, beta = betaUG)
-Posterior_UG
+## Credibility Factor of UG Students
+### This had been calculated using beta binomial function to show Posterior Dist. of UG Students 
+Posterior_UG$credibility_factor
 
-## Estimator that minimises the posterior expected squared loss for PG
+## Estimator that minimises the posterior expected squared loss for PG (Posterior Mean)
 E_UG <- Posterior_UG$alpha_tilde / (Posterior_UG$alpha_tilde + Posterior_UG$beta_tilde)
 E_UG
 ```
@@ -415,16 +429,16 @@ E_UG
 ### State the estimator that minimises the posterior expected absolute error loss for the proportion of students who “passed” for a given cohort. Using the data, calculate the estimate for both cohorts of students. [4 marks]
 ```{r}
 # PG STUDENTS
-## Estimator that minimises the posterior expected absolute loss for PG
+## Estimator that minimises the posterior expected absolute loss for PG (Posterior Median)
 E_PG_AE <- qbeta(0.5, Posterior_PG$alpha_tilde, Posterior_PG$beta_tilde)
 E_PG_AE  
 
 # UG STUDENTS
-## Estimator that minimises the posterior expected absolute loss for PG
+## Estimator that minimises the posterior expected absolute loss for PG (Posterior Median)
 E_UG_AE <- qbeta(0.5, Posterior_UG$alpha_tilde, Posterior_UG$beta_tilde) 
 E_UG_AE
 ```
-`r `
+
 
 ### For each cohort of students, visualise the posterior distribution the proportion of students who “passed”. Discuss any interesting features. [3 marks]
 ```{r}
@@ -471,30 +485,31 @@ grid.arrange(p1,p2, nrow = 2)
 Uniform dist. Using posterior as prior in next year.
 
 
-The lecturer wants to analyse the difference in proportions of “passing” for the two cohorts.
+
 ### Simulate the posterior distribution of the difference in the proportion of postgraduate students who “passed” and the proportion of undergraduate students who “passed”. [4 marks]
 ```{r}
 # Difference
-sample_diff <- samplePG - sampleUG
-diff_15 <- abs(sample_diff) <= 0.15
-
-# Visualise the difference
-ds_diff <- tibble(delta = sample_diff)
-ds_diff %>% 
-      ggplot(aes(x = delta, y = ..density..)) +
-        geom_histogram(colour = "blue", fill = "blue", alpha = 0.4, bins = 100) +
-        geom_density( colour = "blue", fill = "gray", alpha = 0.4) + 
-        #geom_vline(xintercept = c(0.01, -0.01), colour = "red") + 
-        ggtitle(expression(paste("Simulated posterior pdf of ", Delta))) + 
-        xlab(expression(Delta)) +
-        theme_bw()
+Posterior_PG_meanvar <- beta_meanvar(Posterior_PG$alpha_tilde, Posterior_PG$beta_tilde) 
+Posterior_UG_meanvar <- beta_meanvar(Posterior_UG$alpha_tilde, Posterior_UG$beta_tilde) 
+delta_mean <- Posterior_PG_meanvar$mean - Posterior_UG_meanvar$mean 
+delta_var <- Posterior_PG_meanvar$var + Posterior_UG_meanvar$var
+c(delta_mean, delta_var)
 ```
 
 
 
 ### Give the lecturer an indication of the probability that the difference in the grades of the 2 cohorts is within 0.15. Be sure to provide a visualisation of the posterior to support your indication. [4 marks]
 ```{r}
-mean(diff_15)
+# Visualise the difference
+ds_diff <- tibble(delta = sample_diff)
+ds_diff %>% 
+      ggplot(aes(x = delta, y = ..density..)) +
+        geom_histogram(colour = "blue", fill = "blue", alpha = 0.4, bins = 100) +
+        geom_density( colour = "blue", fill = "gray", alpha = 0.4) + 
+        geom_vline(xintercept = 0.15, colour = "red") + 
+        ggtitle(expression(paste("Simulated posterior pdf of ", Delta))) + 
+        xlab(expression(Delta)) +
+        theme_bw()
 ```
 
 
