@@ -94,7 +94,10 @@ for(i in 1:B){
   df <- df %>% mutate(temp = temp) 
   MLE.x_boot[i,] <- fitdistr(temp, "normal")$estimate 
   params_boot <- MLE.x_boot[i,] 
-  p <- p + stat_qq(aes(sample = temp), distribution = qnorm, dparams = params_boot, colour = "grey", alpha = 0.2)
+  p <- p + stat_qq(aes(sample = temp), 
+                   distribution = qnorm, 
+                   dparams = params_boot, 
+                   colour = "grey", alpha = 0.2)
 } 
 
 p <- p + stat_qq(aes(sample = x), distribution = qnorm, dparams = params) +
@@ -146,10 +149,16 @@ for(i in 1:B){
   dt <- dt %>% mutate(temp = temp) 
   MLE.x_boot[i,] <- fitdistr(temp, "beta", start = list(shape1 = 1, shape2 = 1))$estimate 
   params_boot <- MLE.x_boot[i,] 
-  p_betadist <- p_betadist + stat_qq(aes(sample = temp), distribution = qbeta, dparams = params_boot, colour = "grey", alpha = 0.2)
+  p_betadist <- p_betadist + stat_qq(aes(sample = temp), 
+                                     distribution = qbeta, 
+                                     dparams = params_boot, 
+                                     colour = "grey", 
+                                     alpha = 0.2)
 } 
 
-p_betadist <- p_betadist + stat_qq(aes(sample = x), distribution = qbeta, dparams = params_betadist) +
+p_betadist <- p_betadist + stat_qq(aes(sample = x), 
+                                   distribution = qbeta, 
+                                   dparams = params_betadist) +
   ggtitle("QQ plot with B=500 Bootstrap replicates (Beta Distribution)")
 
 p_betadist
@@ -204,7 +213,8 @@ MLE.x_mean <- matrix(nrow = B, ncol = 1)
 for(i in 1:B){ 
   temp <- sample(dt$x, size=n, replace=TRUE) 
   MLE.x_boot[i,] <- fitdistr(temp, "beta", start = list(shape1 = 1, shape2 = 1))$estimate
-  MLE.x_mean[i] <- as.numeric(MLE.x_boot[i,1]) / (as.numeric(MLE.x_boot[i,1]) + as.numeric(MLE.x_boot[1,2]))
+  MLE.x_mean[i] <- as.numeric(MLE.x_boot[i,1]) / (as.numeric(MLE.x_boot[i,1]) + 
+                                                    as.numeric(MLE.x_boot[1,2]))
 }
 boot.LCI.mean <- quantile(MLE.x_mean[], c(0.005, 0.995))
 boot.LCI.mean
@@ -318,12 +328,21 @@ Rxobs_tbl %>%
 
 
 ### What is the result of this test? (Be sure to properly define the null and alternative hypothesis and discuss the result of the test).
-In this case, we are interested in finding if PG students are actually better than UG students based on the quiz that they have taken. In doing so, we are going to perform upper one-sided hypothesis test, with $H_0$ and $H_1$ are:
-$$H_0: p_{PG}-p_{UG} = 0 \quad \mbox{vs.} \quad H_1: p_{PG}-p_{UG} > 0,$$
-where ${p}_{P}$ and ${p}_{U}$ denote the population proportions of Post-Graduate and Under-Graduate students passing the quiz, respectively. **H0 statement, H1 statement?**
 
-Based on the result that we have done previously, we have got p-value of the test is 0.0292. This suggest that based on the evidence we have, we reject the $H_0$. It means that it is likely there is a difference in the capability of PG students to pass the quiz compare to UG students, with PG students are better. To support this, we can see visually from the plot, our observed difference (the red line) is not likely to have come from a distribution which assumes that there are no difference between PG students and UG students, since it is far from 0.
+We want to test whether the sample supports the hypothesis that the pass and fail rates are the same for both the UG and PG cohorts. To do that, we need to determine whether the difference in proportions is equal to 0 or not and whether it is statistically significant.
 
+$$H_0: p_{PG}-p_{UG} = 0 \quad \mbox{vs.} \quad H_1: p_{PG}-p_{UG} \neq 0,$$
+where ${p}_{PG}$ and ${p}_{UG}$ denote the population proportions of postgraduate and undergraduate students passing the quiz, respectively.
+
+Null Hypothesis ($H_0$): There is no difference in pass and fail rates between the UG and PG cohorts.
+
+Alternative Hypothesis ($H_1$): There is evidence to suggest that there is a difference between the pass and fail rates of the UG and PG cohorts.
+
+Using a 95% confidence interval (which corresponds to a significance level of $\alpha = 0.05$), we conducted a hypothesis test.
+
+The p-value of the test is 0.0292, which is less than the chosen significance level of 0.05. Therefore, we have significant evidence to reject the null hypothesis in favor of the alternative hypothesis, indicating that there is a difference between the pass and fail rates of the UG and PG cohorts.
+
+To further support this conclusion, we can visually observe from the plot that the observed difference (represented by the red line) is far from 0. This suggests that it is unlikely to have arisen from a distribution that assumes no difference between PG and UG students.
 
 ### The lecturer may be confused as to why such a large difference in proportions does not have a p-value of almost 0. Explain why this may occur. [4 marks]
 The reason why this happens may significantly because of the sample size. As we know, the PG sample size is 48 while UG sample size is 145, they almost have hundred of different sample size. Since the p-value is influenced by the size of the sample, if we have small sample size, we have less data points to estimate population parameters accurately, which lead to a larger standard error (a measure of the variability of the sample). In turn, providing a lower test statistic. A lower test statistic contributes to a smaller p-value. 
@@ -357,6 +376,7 @@ beta_meanvar <- function(alpha = 1, beta = 1) {
 An appropriate prior distribution for the proportion of postgraduate students who "passed" and one for the proportion of undergraduate students who "passed" would be a beta distribution. 
 
 A beta distribution is appropriate because: 
+
   - Beta distributions are conjugate to the binomial distribution, which can model our binary outcomes of pass and fail.
   - The beta distribution is also flexible using shape parameters alpha and beta to represent a more accurate belief on our prior beliefs or available data. For example, when we modelled our data before it was slightly skewed.
   - It also ranges between 0 and 1, which is accurate for our analysis.
@@ -368,7 +388,11 @@ The posterior distribution for the proportion of postgraduate students who "pass
 The formula $\text{Posterior} \propto \text{Likelihood} \times \text{Prior}$ means: The posterior is proportional to the likelihood multiplied by the prior. When updating our prior belief with the likelihood (which follows a binomial distribution), we obtain a new beta distribution for the posterior. The parameters of this posterior beta distribution are updated based on the data and prior information. 
 
 The beta distribution is parameterised by two shape parameters, alpha and beta, and after updating, these parameters will have new values that reflect our updated beliefs and knowledge about the proportions of students who "passed".
+
 ```{r}
+nPG <- 48 #student count
+nUG <- 145 #student count
+
 # PG Students
 alphaPG <- 1
 betaPG <- 1
@@ -482,9 +506,10 @@ grid.arrange(p1,p2, nrow = 2)
 
 
 ### The lecturer wishes to do this again next semester. What priors do you suggest that she use? Explain your reasoning. [2 marks]
-Uniform dist. Using posterior as prior in next year.
 
+For the next semester, we recommend using the posterior distribution from the previous semester as the prior, specifically a beta distribution. This approach adheres to Bayesian principles, incorporating the latest data.
 
+Additionally, utilising a uniform distribution as the prior will ensure an unbiased perspective each year.
 
 ### Simulate the posterior distribution of the difference in the proportion of postgraduate students who “passed” and the proportion of undergraduate students who “passed”. [4 marks]
 ```{r}
