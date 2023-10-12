@@ -191,7 +191,7 @@ The median of the Beta distribution is `r round(median, 3)`, confirming the slig
 bootplot.f<- function(stat.boot, bins=50, a=.01){
   
   df <- tibble(stat = stat.boot)
-  CI <- round(quantile(stat.boot, c(0.025, 0.975)),2)
+  CI <- round(quantile(stat.boot, c(0.005, 0.995)),2)
   
   p <- df %>% ggplot(aes(x=stat, y=after_stat(density))) +  
     geom_histogram(bins=bins, colour="grey", fill="grey", alpha=0.2) + 
@@ -226,6 +226,13 @@ p_MLEboot.mean <- bootplot.f(MLE.x_mean[], bins = 100) +
 
 p_MLEboot.mean
 ```
+The parametric bootstrap confidence interval (CI) for the mean is [0.628, 0.724].
+
+The lecturer advised that the average mark would be approximately 70%, with most students falling within about 10% of that grade. 
+
+We are 99% confident that the population value $\mu$ is contained within our 99% confidence interval of [0.628, 0.724].
+
+Since $\mu$ lies between 0.628 and 0.724, it does cover the average mark of 70% and meets the lecturer's goal.
 
 ### Using the MLE’s, what is the estimated proportion of students within 15% of the average? According to the lecturer’s benchmark, what proportion would have failed? How many would get HD’s? [4 marks]
 ```{r}
