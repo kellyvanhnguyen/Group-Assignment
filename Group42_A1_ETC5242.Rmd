@@ -254,8 +254,6 @@ Additionally, 48.65% of students scored within 15% of the MLE mean of the grades
 
 However, the benchmark of 60% could be considered quite high, as 25.83% of the class failed. This suggests that the quiz may have been too difficult for some students, and that the lecturer may want to reconsider the benchmark in the future.
 
-\newpage
-
 ## Task 2 - Are Postgrad students better? [30 marks]
 
 ### Create a new variable “Result” which contains the values “Pass” or “Fail” depending on the value of the variable Total, and add it to your dataframe. (Hint: If you have the MASS package loaded, the dplyr command select will not work. Add dplyr::before any select command in your code.) [4 marks]
@@ -286,10 +284,14 @@ grades_s3 <- grades_s2 %>%
 grades_s4 <- grades_s3 %>%
               arrange(desc(row_number()))
 
+```
+
+```{r table}
 grades_s4 %>% 
   kable(caption = "Proportion of Students who Passed or Failed") %>% 
   kable_styling()
 ```
+
 As can be seen from the table above, there are more students enrolled in the undergraduate cohort (145 compared to 48), with a higher number of students passing and failing than in the postgraduate cohort (102 compared to 41). 
 
 However, there is a higher proportion of students who passed in the postgraduate cohort compared to the undergraduate cohort, with 85.4% passing compared to 70.3%. This is a difference of 0.151. 
