@@ -254,6 +254,8 @@ Additionally, 48.65% of students scored within 15% of the MLE mean of the grades
 
 However, the benchmark of 60% could be considered quite high, as 25.83% of the class failed. This suggests that the quiz may have been too difficult for some students, and that the lecturer may want to reconsider the benchmark in the future.
 
+\newpage
+
 ## Task 2 - Are Postgrad students better? [30 marks]
 
 ### Create a new variable “Result” which contains the values “Pass” or “Fail” depending on the value of the variable Total, and add it to your dataframe. (Hint: If you have the MASS package loaded, the dplyr command select will not work. Add dplyr::before any select command in your code.) [4 marks]
@@ -366,6 +368,7 @@ The alpha level chosen will also affect the p-value. In this case, using an alph
 
 A lower alpha level implies a stricter criterion for significance, resulting in smaller p-values if the observed difference is substantial. Conversely, a higher alpha level increases the likelihood of a Type I error, where you incorrectly reject the null hypothesis.
 
+\newpage 
 
 ## Task 3 - Bayesian Analysis [33 marks]
 
@@ -512,6 +515,7 @@ p1 <- ds_PG %>%
         #geom_vline(xintercept = c(0.01, -0.01), colour = "red") + 
         ggtitle("Simulated posterior pdf of PG Students") + 
         xlab("Sample") +
+        ylab("Density") +
         theme_bw()
 
 
@@ -528,13 +532,15 @@ p2 <- ds_UG %>%
         #geom_vline(xintercept = c(0.01, -0.01), colour = "red") + 
         ggtitle("Simulated posterior pdf of UG Students") + 
         xlab("Sample") +
+        ylab("Density") +
         theme_bw()
 
 grid.arrange(p1,p2, nrow = 2)
 ```
 
-Upon analysing the posterior distribution of the proportion of students who passed the quiz, there are few interesting features that are presented. In the case of the undergraduate students, the posterior distribution shows a relatively normal distribution. However, for the case of the postgraduate students who passed the quiz, their posterior distribution shows a slightly right skewed distribution. 
+Upon analysing the posterior distribution of the proportion of students who passed the quiz, several interesting features emerge. In the case of the undergraduate students, the posterior distribution exhibits a relatively normal shape. However, for the postgraduate students who passed the quiz, their posterior distribution displays a slight right skew.
 
+Furthermore, it is evident that the mean score for postgraduate students is higher than that of the undergraduate students, as we can directly compare in the plot.
 
 ### The lecturer wishes to do this again next semester. What priors do you suggest that she use? Explain your reasoning. [2 marks]
 
@@ -546,6 +552,8 @@ We would only utilise a uniform distribution as the prior in a new setting, such
 ```{r}
 # Difference
 sample_diff <- samplePG - sampleUG
+
+# Posterior mean and variance of the difference
 Posterior_PG_meanvar <- beta_meanvar(Posterior_PG$alpha_tilde, Posterior_PG$beta_tilde) 
 Posterior_UG_meanvar <- beta_meanvar(Posterior_UG$alpha_tilde, Posterior_UG$beta_tilde) 
 delta_mean <- Posterior_PG_meanvar$mean - Posterior_UG_meanvar$mean 
@@ -553,7 +561,7 @@ delta_var <- Posterior_PG_meanvar$var + Posterior_UG_meanvar$var
 c(delta_mean, delta_var)
 ```
 
-
+The simulated difference in the proportions of postgraduate and undergraduate students has a mean of 0.139 and a variance of 0.004. This implies that, on average, postgraduate students may have scores that are approximately 13.9% higher, and this difference does not vary significantly, with a variance of only 0.4%.
 
 ### Give the lecturer an indication of the probability that the difference in the grades of the 2 cohorts is within 0.15. Be sure to provide a visualisation of the posterior to support your indication. [4 marks]
 ```{r}
