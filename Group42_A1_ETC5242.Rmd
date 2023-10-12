@@ -78,7 +78,7 @@ p <- ggplot(df, aes(sample = x)) +
   xlab("Theoretical") + ylab("Total Score")
 ```
 
-**Assessing the fitness of normal distribution using Bootstrap QQplot**
+**Assessing the fit of normal distribution using Bootstrap QQplot**
 ```{r qqnorm_dist_boot, out.width = "100%" , fig.align = "center", fig.width = 6, fig.height = 4, eval = TRUE, echo = TRUE}
 set.seed(10) 
 
@@ -133,7 +133,7 @@ p_betadist <- ggplot(dt, aes(sample = x)) +
   xlab("Theoretical") + ylab("Sample")
 ```
 
-**Assessing the fitness of beta distribution using Bootstrap QQplot**
+**Assessing the fit of beta distribution using Bootstrap QQplot**
 ```{r qqbeta_dist_boot, out.width = "100%", fig.align = "center", fig.width = 6, fig.height = 4, eval = TRUE, echo = TRUE, warning = FALSE}
 set.seed(10)
 
